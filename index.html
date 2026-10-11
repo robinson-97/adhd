@@ -149,6 +149,10 @@ main{padding-top:10px}
 .tabs button{padding:11px 4px 10px}
 details.card>summary::before{content:""}
 details.card>summary{font-weight:600}
+.stickybar{position:sticky;bottom:52px;display:flex;gap:8px;padding:10px 0 4px;background:linear-gradient(transparent,var(--bg) 35%);z-index:3}
+.stickybar button{flex:1}
+#lsecs textarea,#l-x textarea{min-height:44px}
+details.card>pre{margin:0}
 </style>
 </head>
 <body>
@@ -232,34 +236,19 @@ details.card>summary{font-weight:600}
 </section>
 
 <section id="v-logboek" class="hide">
-  <div class="seg"><button id="ls-start" onclick="lgo('start')">start</button><button id="ls-pers" onclick="lgo('pers')">team</button><button id="ls-winkel" onclick="lgo('winkel')">winkel</button><button id="ls-extra" onclick="lgo('extra')">extra</button><button id="ls-klaar" onclick="lgo('klaar')">klaar</button></div>
-
-  <div id="l-start">
-    <div class="card">
-      <div class="row" style="align-items:center;gap:6px;margin-bottom:12px"><button onclick="shiftLog(-1)" style="flex:0 0 auto" aria-label="Vorige dag">‹</button><input type="date" id="ldate" style="margin:0" onchange="logDate=this.value||logDate;render()"><button onclick="shiftLog(1)" style="flex:0 0 auto" aria-label="Volgende dag">›</button></div>
-      <div class="mu" style="margin-bottom:6px">snel starten</div>
-      <div class="chips"><button class="sm" onclick="copyPrev()">↩ vorige keer</button><span id="lprof"></span></div>
-      <button class="sm" onclick="saveProf()">+ bewaar als profiel</button>
-    </div>
-    <button class="p" style="width:100%;margin:0 0 12px" onclick="lgo('pers')">beginnen ›</button>
-    <details class="card"><summary>Eerdere logboeken</summary>
-      <div class="nav" style="margin:0 0 6px"><button onclick="mv(-1)" aria-label="Vorige maand">‹</button><b id="mlabel3"></b><button onclick="mv(1)" aria-label="Volgende maand">›</button></div>
-      <div class="mu" id="lsum"></div><div id="lover"></div>
-      <label for="lstore" style="margin-top:14px">Winkelnummer</label><input id="lstore" style="margin:0" onchange="S.store=this.value.trim()||'5873';save();renderLog()">
-    </details>
+  <div class="card">
+    <div class="row" style="align-items:center;gap:6px;margin-bottom:10px"><button onclick="shiftLog(-1)" style="flex:0 0 auto" aria-label="Vorige dag">‹</button><input type="date" id="ldate" style="margin:0" onchange="logDate=this.value||logDate;render()"><button onclick="shiftLog(1)" style="flex:0 0 auto" aria-label="Volgende dag">›</button></div>
+    <div class="chips" style="margin:0"><button class="sm" onclick="copyPrev()">↩ vorige keer</button><span id="lprof"></span><button class="sm" onclick="saveProf()">+ profiel</button></div>
   </div>
-
-  <div id="l-pers" class="hide"></div>
-  <div id="l-winkel" class="hide"></div>
-  <div id="l-extra" class="hide">
-    <div id="lx-dyn"></div>
-    <div class="card"><h2>Overige</h2><textarea id="lx-over" oninput="setX('over',this.value)" style="margin:0"></textarea></div>
-    <button class="p" style="width:100%" onclick="lgo('klaar')">volgende: resultaat ›</button>
-  </div>
-  <div id="l-klaar" class="hide">
-    <div class="card"><h2>Resultaat</h2><pre id="lprev"></pre>
-      <div class="row"><button class="p" onclick="copyLog()">Kopieer</button><button onclick="dlLog()">Download .txt</button></div></div>
-  </div>
+  <div id="lsecs"></div>
+  <div class="card"><h2>Overige</h2><textarea id="lx-over" oninput="setX('over',this.value)" style="margin:0"></textarea></div>
+  <details class="card"><summary>Voorbeeld</summary><pre id="lprev" style="margin:0"></pre></details>
+  <details class="card"><summary>Eerdere logboeken</summary>
+    <div class="nav" style="margin:0 0 6px"><button onclick="mv(-1)" aria-label="Vorige maand">‹</button><b id="mlabel3"></b><button onclick="mv(1)" aria-label="Volgende maand">›</button></div>
+    <div class="mu" id="lsum"></div><div id="lover"></div>
+    <label for="lstore" style="margin-top:14px">Winkelnummer</label><input id="lstore" style="margin:0" onchange="S.store=this.value.trim()||'5873';save();renderLog()">
+  </details>
+  <div class="stickybar"><button class="p" onclick="copyLog()">Kopieer logboek</button><button onclick="dlLog()" style="flex:0 0 auto">.txt</button></div>
 </section>
 </main>
 
@@ -392,7 +381,7 @@ function quickToday(){const l0=xpState().lvl;S.shifts[ymd(new Date())]={...S.def
 function offToday(){const k=ymd(new Date()),o=S.shifts[k];delete S.shifts[k];save();render();toast('Vrij gezet',()=>{S.shifts[k]=o;save();render()})}
 function questList(){
   const k=ymd(new Date());
-  return [[!!S.shifts[k],'Dienst ingevuld',10,"openDay('"+k+"')"],[hasLog(k),'Logboek geschreven',20,"logDate='"+k+"';lpage='pers';tab('logboek')"],[S.exp.some(e=>e.d===k),'Uitgaven bijgehouden',5,"xpage='add';tab('uitgaven')"]];
+  return [[!!S.shifts[k],'Dienst ingevuld',10,"openDay('"+k+"')"],[hasLog(k),'Logboek geschreven',20,"logDate='"+k+"';tab('logboek')"],[S.exp.some(e=>e.d===k),'Uitgaven bijgehouden',5,"xpage='add';tab('uitgaven')"]];
 }
 let qOpen=false;
 function toggleQ(){qOpen=!qOpen;renderHero()}
@@ -612,8 +601,6 @@ function logText(d){
   return t;
 }
 function updPrev(){$('lprev').textContent=logText(logDate)}
-let lpage='start';
-function lgo(p){lpage=p;renderLog();scrollTo(0,0)}
 function secCard(k,name,L){
   const chips=S.lt[k].map((z,i)=>{
     const on=L.on[k].includes(z),num=z.includes('#');
@@ -622,25 +609,18 @@ function secCard(k,name,L){
     return `<span class="chip${on?' on':''}" onclick="tg('${k}',${i})">${st}${label}${editLt?`<i onclick="event.stopPropagation();delLt('${k}',${i})" style="font-style:normal;color:var(--bad)">✕</i>`:''}</span>`;
   }).join('');
   const add=editLt?`<div class="row" style="margin-bottom:8px"><input id="nl-${k}" placeholder="Nieuwe zin (# = aantal)" style="margin:0"><button onclick="addLt('${k}')" style="flex:0 0 auto">+</button></div>`:'';
-  return `<div class="card"><div class="li" style="border:0;padding:0 0 8px"><h2 style="margin:0">${name}</h2><button class="sm" onclick="editLt=!editLt;renderLog()">${editLt?'klaar':'zinnen aanpassen'}</button></div><div class="chips">${chips}</div>${add}<textarea placeholder="Extra…" oninput="setX('${k}',this.value)" style="margin:0">${esc(L.x[k]||'')}</textarea></div>`;
+  return `<div class="card"><div class="li" style="border:0;padding:0 0 8px"><h2 style="margin:0">${name}</h2>${k==='pers'?`<button class="sm" onclick="editLt=!editLt;renderLog()">${editLt?'klaar':'zinnen aanpassen'}</button>`:''}</div><div class="chips">${chips}</div>${add}<textarea placeholder="Extra…" oninput="setX('${k}',this.value)" style="margin:0">${esc(L.x[k]||'')}</textarea></div>`;
 }
-const nextBtn=(to,t)=>`<button class="p" style="width:100%" onclick="lgo('${to}')">${t} ›</button>`;
 function renderLog(){
   const L=getLog(logDate);
-  ['start','pers','winkel','extra','klaar'].forEach(k=>{$('l-'+k).classList.toggle('hide',k!==lpage);$('ls-'+k).classList.toggle('on',k===lpage)});
-  const cnt=k=>L.on[k].length+((L.x[k]||'').trim()?1:0),bd=n=>n?' <span class="cn">'+n+'</span>':'';
-  $('ls-pers').innerHTML='team'+bd(cnt('pers'));$('ls-winkel').innerHTML='winkel'+bd(cnt('winkel'));
-  $('ls-extra').innerHTML='extra'+bd(cnt('haccp')+cnt('diefstal')+((L.x.over||'').trim()?1:0));
   $('ldate').value=logDate;$('lstore').value=S.store;
   $('lprof').innerHTML=S.profiles.map((p,i)=>`<span class="chip" onclick="applyProf(${i})">${esc(p.name)}${editLt?`<i onclick="event.stopPropagation();delProf(${i})" style="font-style:normal;color:var(--bad)">✕</i>`:''}</span>`).join('');
-  $('l-pers').innerHTML=secCard('pers','Personeel',L)+nextBtn('winkel','volgende: winkel');
-  $('l-winkel').innerHTML=secCard('winkel','Winkel',L)+nextBtn('extra','volgende: extra');
-  $('lx-dyn').innerHTML=secCard('haccp','HACCP',L)+secCard('diefstal','Diefstal',L);
+  $('lsecs').innerHTML=SEC.map(([k,name])=>secCard(k,name,L)).join('');
   $('lx-over').value=L.x.over||'';
   updPrev();
   const mk=monthKey(),days=Object.keys(S.logs).filter(d=>d.startsWith(mk)&&hasLog(d)).sort().reverse();
   $('lsum').textContent=`${days.length} ${days.length===1?'logboek':'logboeken'} in ${monthName()}`;
-  $('lover').innerHTML=days.map(d=>`<div class="li" style="cursor:pointer" onclick="logDate='${d}';lpage='pers';render();scrollTo(0,0)"><span>${new Date(d+'T12:00').toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short'})}</span><span class="mu">openen</span></div>`).join('');
+  $('lover').innerHTML=days.map(d=>`<div class="li" style="cursor:pointer" onclick="logDate='${d}';render();scrollTo(0,0)"><span>${new Date(d+'T12:00').toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short'})}</span><span class="mu">openen</span></div>`).join('');
 }
 function copyLog(){
   const t=logText(logDate);

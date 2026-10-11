@@ -131,6 +131,24 @@ details.card[open]>summary{margin-bottom:12px}
 details h3{font-size:13px;margin:14px 0 8px;color:var(--mu);font-weight:600}
 details h3:first-of-type{margin-top:0}
 #lprof{display:contents}
+.card{padding:12px;margin-bottom:12px}
+main{padding-top:10px}
+.hero{display:block;padding:8px 10px;margin-bottom:10px}
+.hero .hrow{display:flex;align-items:center;gap:10px}
+.hero .xt{white-space:nowrap}
+.hero .qb{padding:4px 8px;min-height:30px;font-size:12px;white-space:nowrap}
+.hero .qb.todo{border-color:#388bfd88;color:var(--hi)}
+#qpanel{margin-top:6px;border-top:1px solid var(--bd2)}
+.today{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 10px}
+.today .tb{margin-left:auto;display:flex;gap:6px}
+.today .amt{font-size:13px}
+.seg{margin-bottom:10px}
+.seg button{font-size:12px;padding:9px 2px}
+.seg .cn{display:inline-block;background:var(--sel);color:var(--hi);border-radius:8px;padding:0 5px;font-size:10px;vertical-align:middle}
+.nav{margin:0 0 10px}
+.tabs button{padding:11px 4px 10px}
+details.card>summary::before{content:""}
+details.card>summary{font-weight:600}
 </style>
 </head>
 <body>
@@ -139,31 +157,38 @@ details h3:first-of-type{margin-top:0}
 <div id="toast" role="status" aria-live="polite"></div>
 <section id="v-agenda">
   <div class="card hide" id="bk"></div>
-  <div class="card" id="today"></div>
-  <div class="card">
-    <div class="nav" style="margin-top:0"><button onclick="mv(-1)" aria-label="Vorige maand">‹</button><b id="mlabel"></b><button onclick="mv(1)" aria-label="Volgende maand">›</button></div>
-    <div class="cal" id="cal"></div>
-    <div class="legend"><span><i class="lg w"></i>gewerkt</span><span><i class="lg plan"></i>gepland</span><span><i class="dot" style="position:static;display:inline-block"></i>logboek</span></div>
-    <p class="mu" style="margin:10px 0 0">Tik op een lege dag = inplannen (standaarddienst). Tik op een gevulde dag = aanpassen of vrij.</p>
-  </div>
+  <div class="seg"><button id="as-cal" onclick="ago('cal')">kalender</button><button id="as-over" onclick="ago('over')">overzicht</button><button id="as-set" onclick="ago('set')">instellingen</button></div>
+  <div class="nav" id="anav"><button onclick="mv(-1)" aria-label="Vorige maand">‹</button><b id="mlabel"></b><button onclick="mv(1)" aria-label="Volgende maand">›</button></div>
 
-  <div class="card"><h2>Overzicht</h2>
-    <div class="li" style="border:0;padding:0 0 10px;align-items:flex-end">
-      <div><div class="mu" id="mname"></div><div class="big" id="total">0u</div></div>
-      <div style="text-align:right"><div id="dayscount" class="mu"></div><div id="wagetxt" class="mu"></div></div>
+  <div id="a-cal">
+    <div class="card today" id="today"></div>
+    <div class="card">
+      <div class="cal" id="cal"></div>
+      <div class="legend"><span><i class="lg w"></i>gewerkt</span><span><i class="lg plan"></i>gepland</span><span><i class="dot" style="position:static;display:inline-block"></i>logboek</span></div>
+      <p class="mu" style="margin:8px 0 0">leeg = inplannen · gevuld = aanpassen</p>
     </div>
-    <div id="weeks"></div>
   </div>
 
-  <details class="card" id="agset">
-    <summary>Instellingen</summary>
-    <h3>Standaard dienst</h3>
-    <div class="row"><div><label for="ds">Start</label><input type="time" id="ds" onchange="saveDef()"></div><div><label for="de">Einde</label><input type="time" id="de" onchange="saveDef()"></div><div><label for="dp">Pauze min</label><input type="number" id="dp" min="0" onchange="saveDef()"></div></div>
-    <label for="dw">Uurloon bruto (€, optioneel)</label><input id="dw" type="text" inputmode="decimal" placeholder="bijv. 14,50" onchange="saveDef()">
-    <h3>Herinnering</h3>
-    <p class="mu" style="margin-top:0">Maakt een agenda-bestand met een melding aan het einde van elke geplande dienst. Open het bestand op je telefoon om het toe te voegen.</p>
-    <button onclick="dlIcs()" style="width:100%">Zet herinneringen in mijn agenda</button>
-  </details>
+  <div id="a-over" class="hide">
+    <div class="card"><h2>Overzicht</h2>
+      <div class="li" style="border:0;padding:0 0 10px;align-items:flex-end">
+        <div><div class="mu" id="mname"></div><div class="big" id="total">0u</div></div>
+        <div style="text-align:right"><div id="dayscount" class="mu"></div><div id="wagetxt" class="mu"></div></div>
+      </div>
+      <div id="weeks"></div>
+    </div>
+  </div>
+
+  <div id="a-set" class="hide">
+    <div class="card"><h2>Standaard dienst</h2>
+      <div class="row"><div><label for="ds">Start</label><input type="time" id="ds" onchange="saveDef()"></div><div><label for="de">Einde</label><input type="time" id="de" onchange="saveDef()"></div><div><label for="dp">Pauze min</label><input type="number" id="dp" min="0" onchange="saveDef()"></div></div>
+      <label for="dw">Uurloon bruto (€, optioneel)</label><input id="dw" type="text" inputmode="decimal" placeholder="bijv. 14,50" onchange="saveDef()" style="margin:0">
+    </div>
+    <div class="card"><h2>Herinnering</h2>
+      <p class="mu" style="margin-top:0">Een agenda-bestand met een melding aan het einde van elke geplande dienst. Open het op je telefoon om het toe te voegen.</p>
+      <button onclick="dlIcs()" style="width:100%">Zet herinneringen in mijn agenda</button>
+    </div>
+  </div>
 </section>
 
 <section id="v-uitgaven" class="hide">
@@ -195,32 +220,45 @@ details h3:first-of-type{margin-top:0}
   <div id="x-list" class="hide"><div class="card" id="list"></div></div>
 
   <div id="x-set" class="hide">
-    <div class="card"><h2>Maandbudget (HP)</h2><input id="mb" type="text" inputmode="decimal" placeholder="bijv. 1500" onchange="setMb(this.value)"><div class="mu">Leeg laten = som van je categoriebudgetten.</div></div>
-    <div class="card"><h2>Categorieën</h2><div id="cats"></div>
-      <div class="row" style="margin-top:8px"><input id="nc" placeholder="🍕 Nieuwe categorie" style="margin:0"><button onclick="addCat()" style="flex:0 0 auto">+</button></div></div>
-    <div class="card"><h2>Terugkerend</h2><div id="reclist"></div>
+    <details class="card"><summary>Maandbudget (HP)</summary><input id="mb" type="text" inputmode="decimal" placeholder="bijv. 1500" onchange="setMb(this.value)"><div class="mu">Leeg laten = som van je categoriebudgetten.</div></details>
+    <details class="card"><summary>Categorieën</summary><div id="cats"></div>
+      <div class="row" style="margin-top:8px"><input id="nc" placeholder="🍕 Nieuwe categorie" style="margin:0"><button onclick="addCat()" style="flex:0 0 auto">+</button></div></details>
+    <details class="card"><summary>Terugkerend</summary><div id="reclist"></div>
       <div class="row"><div><label for="ra">Bedrag (€)</label><input id="ra" type="text" inputmode="decimal"></div><div><label for="rd">Dag v/d maand</label><input id="rd" type="number" min="1" max="31" value="1"></div></div>
       <label for="rc">Categorie</label><select id="rc"></select><label for="rn">Omschrijving</label><input id="rn" placeholder="bijv. Huur">
-      <button class="p" style="width:100%" onclick="addRec()">Toevoegen</button><p class="mu">Wordt elke maand automatisch bij je uitgaven gezet.</p></div>
-    <div class="card"><h2>Back-up</h2><div class="mu" id="bkinfo" style="margin-bottom:8px"></div><div class="row"><button onclick="exportData()">Exporteer</button><button onclick="document.getElementById('imp').click()">Importeer</button></div><button id="restore" class="hide" style="width:100%;margin-top:8px" onclick="restorePrev()">↩ Herstel vorige gegevens</button><input type="file" id="imp" class="hide" accept=".json" onchange="importData(this)"></div>
+      <button class="p" style="width:100%" onclick="addRec()">Toevoegen</button><p class="mu">Wordt elke maand automatisch bij je uitgaven gezet.</p></details>
+    <details class="card"><summary>Back-up</summary><div class="mu" id="bkinfo" style="margin-bottom:8px"></div><div class="row"><button onclick="exportData()">Exporteer</button><button onclick="document.getElementById('imp').click()">Importeer</button></div><button id="restore" class="hide" style="width:100%;margin-top:8px" onclick="restorePrev()">↩ Herstel vorige gegevens</button><input type="file" id="imp" class="hide" accept=".json" onchange="importData(this)"></details>
   </div>
 </section>
 
 <section id="v-logboek" class="hide">
-  <div class="card">
-    <div class="row" style="align-items:center;gap:6px;margin-bottom:12px"><button onclick="shiftLog(-1)" style="flex:0 0 auto" aria-label="Vorige dag">‹</button><input type="date" id="ldate" style="margin:0" onchange="logDate=this.value||logDate;render()"><button onclick="shiftLog(1)" style="flex:0 0 auto" aria-label="Volgende dag">›</button></div>
-    <div class="mu" style="margin-bottom:6px">snel starten</div>
-    <div class="chips"><button class="sm" onclick="copyPrev()">↩ vorige keer</button><span class="chips" id="lprof" style="display:contents"></span></div>
-    <button class="sm" onclick="saveProf()">+ bewaar als profiel</button>
+  <div class="seg"><button id="ls-start" onclick="lgo('start')">start</button><button id="ls-pers" onclick="lgo('pers')">team</button><button id="ls-winkel" onclick="lgo('winkel')">winkel</button><button id="ls-extra" onclick="lgo('extra')">extra</button><button id="ls-klaar" onclick="lgo('klaar')">klaar</button></div>
+
+  <div id="l-start">
+    <div class="card">
+      <div class="row" style="align-items:center;gap:6px;margin-bottom:12px"><button onclick="shiftLog(-1)" style="flex:0 0 auto" aria-label="Vorige dag">‹</button><input type="date" id="ldate" style="margin:0" onchange="logDate=this.value||logDate;render()"><button onclick="shiftLog(1)" style="flex:0 0 auto" aria-label="Volgende dag">›</button></div>
+      <div class="mu" style="margin-bottom:6px">snel starten</div>
+      <div class="chips"><button class="sm" onclick="copyPrev()">↩ vorige keer</button><span id="lprof"></span></div>
+      <button class="sm" onclick="saveProf()">+ bewaar als profiel</button>
+    </div>
+    <button class="p" style="width:100%;margin:0 0 12px" onclick="lgo('pers')">beginnen ›</button>
+    <details class="card"><summary>Eerdere logboeken</summary>
+      <div class="nav" style="margin:0 0 6px"><button onclick="mv(-1)" aria-label="Vorige maand">‹</button><b id="mlabel3"></b><button onclick="mv(1)" aria-label="Volgende maand">›</button></div>
+      <div class="mu" id="lsum"></div><div id="lover"></div>
+      <label for="lstore" style="margin-top:14px">Winkelnummer</label><input id="lstore" style="margin:0" onchange="S.store=this.value.trim()||'5873';save();renderLog()">
+    </details>
   </div>
-  <div id="lsecs"></div>
-  <div class="card"><h2>Overige</h2><textarea id="lx-over" oninput="setX('over',this.value)"></textarea></div>
-  <div class="card"><h2>Resultaat</h2><pre id="lprev"></pre>
-    <div class="row"><button class="p" onclick="copyLog()">Kopieer</button><button onclick="dlLog()">Download .txt</button></div></div>
-  <div class="card"><h2>Eerdere logboeken</h2>
-    <div class="nav" style="margin:0 0 6px"><button onclick="mv(-1)" aria-label="Vorige maand">‹</button><b id="mlabel3"></b><button onclick="mv(1)" aria-label="Volgende maand">›</button></div>
-    <div class="mu" id="lsum"></div><div id="lover"></div>
-    <label for="lstore" style="margin-top:14px">Winkelnummer</label><input id="lstore" style="margin:0" onchange="S.store=this.value.trim()||'5873';save();renderLog()">
+
+  <div id="l-pers" class="hide"></div>
+  <div id="l-winkel" class="hide"></div>
+  <div id="l-extra" class="hide">
+    <div id="lx-dyn"></div>
+    <div class="card"><h2>Overige</h2><textarea id="lx-over" oninput="setX('over',this.value)" style="margin:0"></textarea></div>
+    <button class="p" style="width:100%" onclick="lgo('klaar')">volgende: resultaat ›</button>
+  </div>
+  <div id="l-klaar" class="hide">
+    <div class="card"><h2>Resultaat</h2><pre id="lprev"></pre>
+      <div class="row"><button class="p" onclick="copyLog()">Kopieer</button><button onclick="dlLog()">Download .txt</button></div></div>
   </div>
 </section>
 </main>
@@ -318,7 +356,11 @@ function dayTap(k){
   const l0=xpState().lvl;S.shifts[k]={...S.def};save();render();
   toast(`Ingepland ${S.def.s}–${S.def.e}`,()=>{delete S.shifts[k];save();render()});lvlCheck(l0);
 }
+let apage='cal';
+function ago(p){apage=p;renderAgenda()}
 function renderAgenda(){
+  ['cal','over','set'].forEach(k=>{$('a-'+k).classList.toggle('hide',k!==apage);$('as-'+k).classList.toggle('on',k===apage)});
+  $('anav').classList.toggle('hide',apage==='set');
   const y=cur.getFullYear(),m=cur.getMonth(),n=new Date(y,m+1,0).getDate();
   const off=(new Date(y,m,1).getDay()+6)%7,today=ymd(new Date());
   let h='';
@@ -348,17 +390,17 @@ function renderAgenda(){
 function saveDef(){S.def={s:$('ds').value||'14:30',e:$('de').value||'23:00',p:+$('dp').value||0};S.wage=parseFloat(($('dw').value||'').replace(',','.'))||0;save();renderAgenda()}
 function quickToday(){const l0=xpState().lvl;S.shifts[ymd(new Date())]={...S.def};save();render();toast('+10 XP');lvlCheck(l0)}
 function offToday(){const k=ymd(new Date()),o=S.shifts[k];delete S.shifts[k];save();render();toast('Vrij gezet',()=>{S.shifts[k]=o;save();render()})}
-function quests(){
+function questList(){
   const k=ymd(new Date());
-  const q=[[!!S.shifts[k],'Dienst ingevuld',10,"openDay('"+k+"')"],[hasLog(k),'Logboek geschreven',20,"logDate='"+k+"';tab('logboek')"],[S.exp.some(e=>e.d===k),'Uitgaven bijgehouden',5,"xpage='add';tab('uitgaven')"]];
-  return `<h2 style="margin-top:14px">Dagelijkse quests</h2>`+q.map(([d,t,x,f])=>`<div class="q${d?' done':''}" onclick="${f}"><span class="cb">${d?'[x]':'[ ]'}</span><span>${t}</span><span class="xpt">+${x}xp</span></div>`).join('');
+  return [[!!S.shifts[k],'Dienst ingevuld',10,"openDay('"+k+"')"],[hasLog(k),'Logboek geschreven',20,"logDate='"+k+"';lpage='pers';tab('logboek')"],[S.exp.some(e=>e.d===k),'Uitgaven bijgehouden',5,"xpage='add';tab('uitgaven')"]];
 }
+let qOpen=false;
+function toggleQ(){qOpen=!qOpen;renderHero()}
 function renderToday(){
   const k=ymd(new Date()),sh=S.shifts[k];
-  const dn=new Date().toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'});
   $('today').innerHTML=sh
-   ?`<div class="mu">Vandaag · ${dn}</div><div class="li" style="border:0"><span class="amt">✓ ${sh.s}–${sh.e} · ${fmtH(hours(sh))}</span><span><button class="sm" onclick="openDay('${k}')">Aanpassen</button> <button class="sm d" onclick="offToday()">Vrij</button></span></div>`+quests()
-   :`<div class="mu">Vandaag · ${dn}</div><div class="row" style="margin-top:8px"><button class="p" onclick="quickToday()">Gewerkt ${S.def.s}–${S.def.e}</button><button onclick="openDay('${k}')">Andere tijden…</button></div>`+quests();
+   ?`<span class="mu">vandaag</span><span class="amt">${sh.s}–${sh.e} · ${fmtH(hours(sh))}</span><span class="tb"><button class="sm" onclick="openDay('${k}')">aanpassen</button><button class="sm d" onclick="offToday()">vrij</button></span>`
+   :`<span class="mu">vandaag</span><span class="tb"><button class="sm p" onclick="quickToday()">gewerkt ${S.def.s}–${S.def.e}</button><button class="sm" onclick="openDay('${k}')">anders…</button></span>`;
 }
 function dlIcs(){
   const today=ymd(new Date()),z=n=>String(n).padStart(2,'0');
@@ -407,11 +449,14 @@ function xpState(){
 function lvlCheck(before){const a=xpState();if(a.lvl>before)toast('⬆ Level up! LVL '+a.lvl)}
 function hasLog(d){const L=S.logs[d];return !!L&&(Object.values(L.on||{}).some(a=>a.length)||Object.values(L.x||{}).some(t=>(t||'').trim()))}
 function renderHero(){
-  const s=xpState(),w=(s.xp-s.lo)/(s.hi-s.lo)*100,hero=$('hero');
-  hero.setAttribute('role','group');hero.setAttribute('aria-label',`Level ${s.lvl}, ${s.xp-s.lo} van ${s.hi-s.lo} XP`);
-  if(!hero.querySelector('.xpbar')){hero.innerHTML='<span class="lv"></span><div class="xw"><div class="xpbar"><i style="width:0"></i></div></div><span class="mu xt"></span>';requestAnimationFrame(()=>hero.querySelector('.xpbar i').style.width=w+'%')}
+  const s=xpState(),w=(s.xp-s.lo)/(s.hi-s.lo)*100,hero=$('hero'),q=questList(),done=q.filter(x=>x[0]).length;
+  hero.setAttribute('role','group');hero.setAttribute('aria-label',`Level ${s.lvl}, ${s.xp-s.lo} van ${s.hi-s.lo} XP, ${done} van ${q.length} quests`);
+  if(!hero.querySelector('.xpbar')){hero.innerHTML='<div class="hrow"><span class="lv"></span><div class="xw"><div class="xpbar"><i style="width:0"></i></div></div><span class="mu xt"></span><button class="sm qb" onclick="toggleQ()"></button></div><div id="qpanel" class="hide"></div>';requestAnimationFrame(()=>hero.querySelector('.xpbar i').style.width=w+'%')}
   else hero.querySelector('.xpbar i').style.width=w+'%';
-  hero.querySelector('.lv').textContent='lvl '+s.lvl;hero.querySelector('.xt').textContent=`${s.xp-s.lo}/${s.hi-s.lo} xp`;
+  hero.querySelector('.lv').textContent='lvl '+s.lvl;hero.querySelector('.xt').textContent=`${s.xp-s.lo}/${s.hi-s.lo}`;
+  const qb=hero.querySelector('.qb');qb.textContent=`quests ${done}/${q.length} ${qOpen?'▾':'▸'}`;qb.setAttribute('aria-expanded',qOpen);qb.classList.toggle('todo',done<q.length);
+  const qp=$('qpanel');qp.classList.toggle('hide',!qOpen);
+  qp.innerHTML=qOpen?q.map(([d,t,x,f])=>`<div class="q${d?' done':''}" onclick="qOpen=false;${f}"><span class="cb">${d?'[x]':'[ ]'}</span><span>${t}</span><span class="xpt">+${x}xp</span></div>`).join(''):'';
 }
 function renderExp(){
   const mk=monthKey();
@@ -567,26 +612,35 @@ function logText(d){
   return t;
 }
 function updPrev(){$('lprev').textContent=logText(logDate)}
+let lpage='start';
+function lgo(p){lpage=p;renderLog();scrollTo(0,0)}
+function secCard(k,name,L){
+  const chips=S.lt[k].map((z,i)=>{
+    const on=L.on[k].includes(z),num=z.includes('#');
+    const label=esc(on&&num?z.replace('#',''):z.replace('#','…'));
+    const st=on&&num?`<span class="st"><i onclick="event.stopPropagation();stp('${k}',${i},-1)">−</i><b>${L.n[z]||1}</b><i onclick="event.stopPropagation();stp('${k}',${i},1)">+</i></span>`:'';
+    return `<span class="chip${on?' on':''}" onclick="tg('${k}',${i})">${st}${label}${editLt?`<i onclick="event.stopPropagation();delLt('${k}',${i})" style="font-style:normal;color:var(--bad)">✕</i>`:''}</span>`;
+  }).join('');
+  const add=editLt?`<div class="row" style="margin-bottom:8px"><input id="nl-${k}" placeholder="Nieuwe zin (# = aantal)" style="margin:0"><button onclick="addLt('${k}')" style="flex:0 0 auto">+</button></div>`:'';
+  return `<div class="card"><div class="li" style="border:0;padding:0 0 8px"><h2 style="margin:0">${name}</h2><button class="sm" onclick="editLt=!editLt;renderLog()">${editLt?'klaar':'zinnen aanpassen'}</button></div><div class="chips">${chips}</div>${add}<textarea placeholder="Extra…" oninput="setX('${k}',this.value)" style="margin:0">${esc(L.x[k]||'')}</textarea></div>`;
+}
+const nextBtn=(to,t)=>`<button class="p" style="width:100%" onclick="lgo('${to}')">${t} ›</button>`;
 function renderLog(){
   const L=getLog(logDate);
+  ['start','pers','winkel','extra','klaar'].forEach(k=>{$('l-'+k).classList.toggle('hide',k!==lpage);$('ls-'+k).classList.toggle('on',k===lpage)});
+  const cnt=k=>L.on[k].length+((L.x[k]||'').trim()?1:0),bd=n=>n?' <span class="cn">'+n+'</span>':'';
+  $('ls-pers').innerHTML='team'+bd(cnt('pers'));$('ls-winkel').innerHTML='winkel'+bd(cnt('winkel'));
+  $('ls-extra').innerHTML='extra'+bd(cnt('haccp')+cnt('diefstal')+((L.x.over||'').trim()?1:0));
   $('ldate').value=logDate;$('lstore').value=S.store;
   $('lprof').innerHTML=S.profiles.map((p,i)=>`<span class="chip" onclick="applyProf(${i})">${esc(p.name)}${editLt?`<i onclick="event.stopPropagation();delProf(${i})" style="font-style:normal;color:var(--bad)">✕</i>`:''}</span>`).join('');
-  $('lsecs').innerHTML=SEC.map(([k,name])=>{
-    const chips=S.lt[k].map((z,i)=>{
-      const on=L.on[k].includes(z),num=z.includes('#');
-      const label=esc(on&&num?z.replace('#',''):z.replace('#','…'));
-      const st=on&&num?`<span class="st"><i onclick="event.stopPropagation();stp('${k}',${i},-1)">−</i><b>${L.n[z]||1}</b><i onclick="event.stopPropagation();stp('${k}',${i},1)">+</i></span>`:'';
-      return `<span class="chip${on?' on':''}" onclick="tg('${k}',${i})">${st}${label}${editLt?`<i onclick="event.stopPropagation();delLt('${k}',${i})" style="font-style:normal;color:var(--bad)">✕</i>`:''}</span>`;
-    }).join('');
-    const add=editLt?`<div class="row" style="margin-bottom:8px"><input id="nl-${k}" placeholder="Nieuwe zin (# = aantal)" style="margin:0"><button onclick="addLt('${k}')" style="flex:0 0 auto">+</button></div>`:'';
-    return `<div class="card"><div class="li" style="border:0;padding:0 0 8px"><h2 style="margin:0">${name}</h2>${k==='pers'?`<button class="sm" onclick="editLt=!editLt;renderLog()">${editLt?'Klaar':'Zinnen aanpassen'}</button>`:''}</div><div class="chips">${chips}</div>${add}<textarea placeholder="Extra…" oninput="setX('${k}',this.value)">${esc(L.x[k]||'')}</textarea></div>`;
-  }).join('');
+  $('l-pers').innerHTML=secCard('pers','Personeel',L)+nextBtn('winkel','volgende: winkel');
+  $('l-winkel').innerHTML=secCard('winkel','Winkel',L)+nextBtn('extra','volgende: extra');
+  $('lx-dyn').innerHTML=secCard('haccp','HACCP',L)+secCard('diefstal','Diefstal',L);
   $('lx-over').value=L.x.over||'';
   updPrev();
-  // overzicht van de maand
-  const mk=monthKey(),days=Object.keys(S.logs).filter(d=>d.startsWith(mk)).sort().reverse();
+  const mk=monthKey(),days=Object.keys(S.logs).filter(d=>d.startsWith(mk)&&hasLog(d)).sort().reverse();
   $('lsum').textContent=`${days.length} ${days.length===1?'logboek':'logboeken'} in ${monthName()}`;
-  $('lover').innerHTML=days.map(d=>`<div class="li" style="cursor:pointer" onclick="logDate='${d}';render();scrollTo(0,0)"><span>${new Date(d+'T12:00').toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short'})}</span><span class="mu">openen</span></div>`).join('');
+  $('lover').innerHTML=days.map(d=>`<div class="li" style="cursor:pointer" onclick="logDate='${d}';lpage='pers';render();scrollTo(0,0)"><span>${new Date(d+'T12:00').toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short'})}</span><span class="mu">openen</span></div>`).join('');
 }
 function copyLog(){
   const t=logText(logDate);

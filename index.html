@@ -83,13 +83,12 @@ pre{white-space:pre-wrap;background:var(--bg);border-radius:10px;padding:12px;fo
 <section id="v-logboek" class="hide">
   <div class="nav"><button onclick="mv(-1)">‹</button><b id="mlabel3"></b><button onclick="mv(1)">›</button></div>
   <div class="card"><div class="row"><div><label>Datum</label><input type="date" id="ldate" onchange="logDate=this.value||logDate;render()"></div><div><label>Winkelnummer</label><input id="lstore" onchange="S.store=this.value.trim()||'5873';save();renderLog()"></div></div>
-    <div class="row"><div><label>Weg gegaan om</label><input type="time" id="lend" onchange="setEnd(this.value)"></div><div><label>Dienst</label><div id="lshift" class="big" style="font-size:22px;padding-top:6px"></div></div></div>
   </div>
   <div id="lsecs"></div>
   <div class="card"><h2>Overige</h2><textarea id="lx-over" oninput="setX('over',this.value)"></textarea></div>
   <div class="card"><h2>Logboek</h2><pre id="lprev"></pre>
     <div class="row"><button class="p" onclick="copyLog()">Kopieer</button><button onclick="dlLog()">Download .txt</button></div></div>
-  <div class="card"><h2>Overzicht gewerkt</h2><div class="mu" id="lsum"></div><div id="lover"></div></div>
+  <div class="card"><h2>Eerdere logboeken</h2><div class="mu" id="lsum"></div><div id="lover"></div></div>
 </section>
 </main>
 
@@ -210,17 +209,12 @@ function importData(inp){
 }
 /* ---------- Logboek ---------- */
 const SEC=[['pers','Personeel',0],['winkel','Winkel',1],['haccp','HACCP',1],['diefstal','Diefstal',0]]; // [key,naam,bullets?]
-const fresh=()=>({on:{pers:[],winkel:[],haccp:[],diefstal:[]},n:{},x:{},end:S.def.e});
+const fresh=()=>({on:{pers:[],winkel:[],haccp:[],diefstal:[]},n:{},x:{}});
 const getLog=d=>{const L=S.logs[d]||fresh();L.on=L.on||{};L.n=L.n||{};L.x=L.x||{};SEC.forEach(s=>L.on[s[0]]=L.on[s[0]]||[]);return L};
-function commit(L){ // opslaan + dienst in agenda zetten
-  S.logs[logDate]=L;
-  S.shifts[logDate]={s:S.def.s,e:L.end||S.def.e,p:S.def.p};
-  save();
-}
+function commit(L){S.logs[logDate]=L;save()}
 function tg(k,i){const L=getLog(logDate),z=S.lt[k][i],a=L.on[k],j=a.indexOf(z);j<0?a.push(z):a.splice(j,1);commit(L);renderLog()}
 function stp(k,i,d){const L=getLog(logDate),z=S.lt[k][i];L.n[z]=Math.max(1,(L.n[z]||1)+d);commit(L);renderLog()}
 function setX(k,v){const L=getLog(logDate);L.x[k]=v;commit(L);updPrev()}
-function setEnd(v){if(!v)return;const L=getLog(logDate);L.end=v;commit(L);renderLog()}
 function addLt(k){const el=$('nl-'+k),v=el.value.trim();if(v&&!S.lt[k].includes(v)){S.lt[k].push(v);save();renderLog()}}
 function delLt(k,i){S.lt[k].splice(i,1);save();renderLog()}
 
@@ -239,9 +233,7 @@ function logText(d){
 function updPrev(){$('lprev').textContent=logText(logDate)}
 function renderLog(){
   const L=getLog(logDate);
-  $('ldate').value=logDate;$('lstore').value=S.store;$('lend').value=L.end||S.def.e;
-  const sh={s:S.def.s,e:L.end||S.def.e,p:S.def.p};
-  $('lshift').textContent=`${sh.s}–${sh.e} · ${fmtH(hours(sh))}`;
+  $('ldate').value=logDate;$('lstore').value=S.store;
   $('lsecs').innerHTML=SEC.map(([k,name])=>{
     const chips=S.lt[k].map((z,i)=>{
       const on=L.on[k].includes(z),num=z.includes('#');
@@ -255,10 +247,9 @@ function renderLog(){
   $('lx-over').value=L.x.over||'';
   updPrev();
   // overzicht van de maand
-  const mk=monthKey(),days=Object.keys(S.shifts).filter(d=>d.startsWith(mk)).sort().reverse();
-  let tot=0;days.forEach(d=>tot+=hours(S.shifts[d]));
-  $('lsum').textContent=`${days.length} ${days.length===1?'dienst':'diensten'} · ${fmtH(tot)} in ${monthName()}`;
-  $('lover').innerHTML=days.map(d=>{const s=S.shifts[d];return `<div class="li" style="cursor:pointer" onclick="logDate='${d}';render();scrollTo(0,0)"><span>${new Date(d+'T12:00').toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short'})}${S.logs[d]?' 📝':''}</span><span class="amt">${s.s}–${s.e} · ${fmtH(hours(s))}</span></div>`}).join('');
+  const mk=monthKey(),days=Object.keys(S.logs).filter(d=>d.startsWith(mk)).sort().reverse();
+  $('lsum').textContent=`${days.length} ${days.length===1?'logboek':'logboeken'} in ${monthName()}`;
+  $('lover').innerHTML=days.map(d=>`<div class="li" style="cursor:pointer" onclick="logDate='${d}';render();scrollTo(0,0)"><span>${new Date(d+'T12:00').toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short'})}</span><span class="mu">openen</span></div>`).join('');
 }
 function copyLog(){
   const t=logText(logDate);

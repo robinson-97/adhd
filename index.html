@@ -95,24 +95,27 @@ pre{white-space:pre-wrap;background:var(--bg);border:1px solid var(--bd);border-
 .xpbar i{transition:width .5s ease}
 @keyframes pop{from{opacity:0}to{opacity:1}}
 :focus-visible{outline:2px solid var(--ac);outline-offset:2px}
-.cal{display:grid;grid-template-columns:16px repeat(7,minmax(0,1fr)) 34px;gap:4px;align-items:stretch}
-.cal .dh{display:flex;align-items:center;justify-content:center;padding:0 0 4px;font-size:11px;color:var(--mu)}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;align-items:stretch}
+.cal .dh{display:flex;align-items:center;justify-content:center;padding:0 0 2px;font-size:11px;color:var(--mu)}
 .cal .dh.we{color:var(--dim)}
-.cal .wkn{display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--dim)}
-.cal .wsum{display:flex;align-items:center;justify-content:flex-end;font-size:12px;font-weight:600;color:var(--tx)}
-.day{aspect-ratio:1;min-height:0;display:flex;flex-direction:column;justify-content:space-between;padding:3px 4px;background:var(--bg);border:1px solid var(--bd);border-radius:5px;cursor:pointer;position:relative;text-align:left;overflow:hidden}
+.day{aspect-ratio:1;min-height:0;display:flex;flex-direction:column;justify-content:space-between;padding:4px 5px;background:var(--bg);border:1px solid var(--bd);border-radius:6px;cursor:pointer;position:relative;text-align:left;overflow:hidden}
 .day.e{background:none;border-color:transparent;cursor:default}
 .day.past{opacity:.6}
-.day .dn{font-size:11px;line-height:1;color:var(--dim)}
-.day .hr{font-size:12px;font-weight:700;line-height:1;text-align:right}
-.day .hr small{display:none}
+.day .dn{font-size:13px;line-height:1;color:var(--mu)}
+.day .hr{font-size:11px;font-weight:700;line-height:1;text-align:right}
 .day.w{background:#12331f;border-color:#2ea04388;color:#7ee787;opacity:1}
-.day.w .dn{color:#56a56a}
+.day.w .dn{color:#7ee787;font-weight:700}
 .day.plan{border:1px dashed #2ea043aa;color:#7ee787;opacity:1}
-.day.plan .dn{color:#56a56a}
-.day.t{opacity:1;border:2px solid var(--ac);padding:2px 3px}
-.day.t .dn{color:var(--ac)}
-.dot{position:absolute;top:4px;right:4px;width:5px;height:5px;border-radius:50%;background:var(--ac)}
+.day.plan .dn{color:#7ee787}
+.day.t{opacity:1;border:2px solid var(--ac);padding:3px 4px}
+.day.t .dn{color:var(--ac);font-weight:700}
+.dot{position:absolute;top:5px;right:5px;width:5px;height:5px;border-radius:50%;background:var(--ac)}
+.wr{display:grid;grid-template-columns:78px 1fr 56px;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--bd2);font-size:13px}
+.wr .bar{margin:0}
+.wr .wh{text-align:right}
+.wr .bar i{background:var(--okbg)}
+.wr.now b:first-child{color:var(--ac)}
+.wr.now .bar i{background:var(--ac)}
 .legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:14px;font-size:12px;color:var(--mu);align-items:center}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .lg{display:inline-block;width:12px;height:12px;border-radius:3px}
@@ -137,16 +140,19 @@ details h3:first-of-type{margin-top:0}
 <section id="v-agenda">
   <div class="card hide" id="bk"></div>
   <div class="card" id="today"></div>
-  <div class="card" id="week"></div>
-
   <div class="card">
     <div class="nav" style="margin-top:0"><button onclick="mv(-1)" aria-label="Vorige maand">‹</button><b id="mlabel"></b><button onclick="mv(1)" aria-label="Volgende maand">›</button></div>
-    <div class="li" style="border:0;padding:0 0 14px;align-items:flex-end">
-      <div><div class="mu">gewerkt</div><div class="big" id="total">0u</div></div>
+    <div class="cal" id="cal"></div>
+    <div class="legend"><span><i class="lg w"></i>gewerkt</span><span><i class="lg plan"></i>gepland</span><span><i class="dot" style="position:static;display:inline-block"></i>logboek</span></div>
+    <p class="mu" style="margin:10px 0 0">Tik op een lege dag = inplannen (standaarddienst). Tik op een gevulde dag = aanpassen of vrij.</p>
+  </div>
+
+  <div class="card"><h2>Overzicht</h2>
+    <div class="li" style="border:0;padding:0 0 10px;align-items:flex-end">
+      <div><div class="mu" id="mname"></div><div class="big" id="total">0u</div></div>
       <div style="text-align:right"><div id="dayscount" class="mu"></div><div id="wagetxt" class="mu"></div></div>
     </div>
-    <div class="cal" id="cal"></div>
-    <div class="legend"><span><i class="lg w"></i>gewerkt</span><span><i class="lg plan"></i>gepland</span><span><i class="dot" style="position:static;display:inline-block"></i>logboek</span><span>Σ = uren/week</span></div>
+    <div id="weeks"></div>
   </div>
 
   <details class="card" id="agset">
@@ -290,18 +296,6 @@ function renderBk(){
   $('bk').classList.toggle('hide',!(due&&curTab==='agenda'));
   $('bk').innerHTML=due?`<h2>Back-up maken?</h2><p class="mu" style="margin-top:0">${S.bk?'Je laatste back-up is '+Math.floor((Date.now()-S.bk)/864e5)+' dagen oud.':'Je hebt nog geen back-up gemaakt.'} Je gegevens staan alleen op dit apparaat.</p><div class="row"><button class="p" onclick="exportData()">💾 Back-up</button><button onclick="S.bkSnooze=Date.now()+7*864e5;save();render()">Later</button></div>`:'';
 }
-function renderWeek(){
-  const now=new Date(),td=ymd(now),off=(now.getDay()+6)%7,mon=new Date(now.getFullYear(),now.getMonth(),now.getDate()-off);
-  let tot=0,days=0,sp=0,cells='';
-  for(let i=0;i<7;i++){
-    const d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i),k=ymd(d),sh=S.shifts[k],hh=sh?hours(sh):0;
-    tot+=hh;if(sh)days++;sp+=S.exp.filter(e=>e.d===k).reduce((s,e)=>s+e.a,0);
-    cells+=`<div class="wd${k===td?' t':''}" aria-label="${d.toLocaleDateString('nl-NL',{weekday:'long'})}: ${sh?fmtH(hh):'vrij'}"><span>${['ma','di','wo','do','vr','za','zo'][i]}</span><div class="col"><i style="height:${Math.min(100,hh/10*100)}%"></i></div><b>${sh?+hh.toFixed(1):'–'}</b></div>`;
-  }
-  const t=new Date(Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()));t.setUTCDate(t.getUTCDate()+4-(t.getUTCDay()||7));
-  const wn=Math.ceil(((t-new Date(Date.UTC(t.getUTCFullYear(),0,1)))/864e5+1)/7);
-  $('week').innerHTML=`<h2>Week ${wn}</h2><div class="wk">${cells}</div><div class="li" style="border:0;padding:4px 0 0"><span><b>${fmtH(tot)}</b> · ${days} ${days===1?'dag':'dagen'}</span><span class="mu">uitgegeven ${eur(sp)}</span></div>`;
-}
 function a11y(){
   document.querySelectorAll('.day:not(.e),.chip,.q,#lover .li').forEach(el=>{el.setAttribute('role','button');el.tabIndex=0});
   document.querySelectorAll('.chip').forEach(el=>el.setAttribute('aria-pressed',el.classList.contains('on')));
@@ -319,33 +313,37 @@ document.addEventListener('visibilitychange',()=>{
   lastToday=n;applyRec();render();
 });
 const isoWeek=d=>{const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));t.setUTCDate(t.getUTCDate()+4-(t.getUTCDay()||7));return Math.ceil(((t-new Date(Date.UTC(t.getUTCFullYear(),0,1)))/864e5+1)/7)};
+function dayTap(k){
+  if(S.shifts[k]){openDay(k);return}
+  const l0=xpState().lvl;S.shifts[k]={...S.def};save();render();
+  toast(`Ingepland ${S.def.s}–${S.def.e}`,()=>{delete S.shifts[k];save();render()});lvlCheck(l0);
+}
 function renderAgenda(){
   const y=cur.getFullYear(),m=cur.getMonth(),n=new Date(y,m+1,0).getDate();
   const off=(new Date(y,m,1).getDay()+6)%7,today=ymd(new Date());
-  let h='<div class="dh"></div>';
+  let h='';
   ['ma','di','wo','do','vr','za','zo'].forEach((d,i)=>h+=`<div class="dh${i>4?' we':''}">${d}</div>`);
-  h+='<div class="dh">Σ</div>';
-  let tot=0,cnt=0,wkTot=0;
-  const rows=Math.ceil((off+n)/7);
-  for(let r=0;r<rows;r++){
-    const first=r*7-off+1,wd=new Date(y,m,Math.min(Math.max(first,1),n));
-    h+=`<div class="wkn">${isoWeek(wd)}</div>`;wkTot=0;
-    for(let c=0;c<7;c++){
-      const d=first+c;
-      if(d<1||d>n){h+='<div class="day e"></div>';continue}
-      const k=`${y}-${pad(m+1)}-${pad(d)}`,sh=S.shifts[k],hh=sh?hours(sh):0,past=k<today,we=c>4;
-      if(sh){tot+=hh;cnt++;wkTot+=hh}
-      const cls=['day',we?'we':'',sh?(k<=today?'w':'plan'):(past?'past':''),k===today?'t':''].join(' ');
-      h+=`<div class="${cls}" aria-label="${d} ${monthName()}${sh?', '+fmtH(hh)+(k<=today?' gewerkt':' gepland'):''}" onclick="openDay('${k}')"><span class="dn">${d}</span>${sh?`<span class="hr">${+hh.toFixed(1)}<small>u</small></span>`:'<span class="hr"></span>'}${hasLog(k)?'<i class="dot" title="logboek"></i>':''}</div>`;
-    }
-    h+=`<div class="wsum">${wkTot?+wkTot.toFixed(1)+'u':''}</div>`;
+  for(let i=0;i<off;i++)h+='<div class="day e"></div>';
+  let tot=0,cnt=0;
+  const rows=Math.ceil((off+n)/7),wk=[];
+  for(let r=0;r<rows;r++)wk.push({first:Math.max(r*7-off+1,1),last:Math.min(r*7-off+7,n),h:0,d:0,now:false});
+  for(let d=1;d<=n;d++){
+    const k=`${y}-${pad(m+1)}-${pad(d)}`,sh=S.shifts[k],hh=sh?hours(sh):0,c=(off+d-1)%7,w=wk[Math.floor((off+d-1)/7)];
+    if(sh){tot+=hh;cnt++;w.h+=hh;w.d++}
+    if(k===today)w.now=true;
+    const cls=['day',c>4?'we':'',sh?(k<=today?'w':'plan'):(k<today?'past':''),k===today?'t':''].join(' ');
+    h+=`<div class="${cls}" aria-label="${d} ${monthName()}${sh?', '+fmtH(hh)+(k<=today?' gewerkt':' gepland'):''}" onclick="dayTap('${k}')"><span class="dn">${d}</span>${sh?`<span class="hr">${+hh.toFixed(1)}u</span>`:'<span class="hr"></span>'}${hasLog(k)?'<i class="dot" title="logboek"></i>':''}</div>`;
   }
   $('cal').innerHTML=h;
+  const mn=cur.toLocaleDateString('nl-NL',{month:'long'});
+  $('mname').textContent=`gewerkt in ${mn}`;
   $('total').textContent=fmtH(tot);
-  $('dayscount').textContent=`${cnt} ${cnt===1?'dag':'dagen'} gewerkt`;
+  $('dayscount').textContent=`${cnt} ${cnt===1?'dag':'dagen'}`;
   $('ds').value=S.def.s;$('de').value=S.def.e;$('dp').value=S.def.p;$('dw').value=S.wage||'';
-  $('wagetxt').textContent=S.wage?`≈ ${eur(tot*S.wage)} bruto (indicatie)`:'';
-  renderToday();renderWeek();
+  $('wagetxt').textContent=S.wage?`≈ ${eur(tot*S.wage)} bruto`:'';
+  const mon=cur.toLocaleDateString('nl-NL',{month:'short'}).replace('.','');
+  $('weeks').innerHTML=wk.map(w=>`<div class="wr${w.now?' now':''}"><div><b>wk ${isoWeek(new Date(y,m,w.first))}</b><div class="mu">${w.first}${w.last>w.first?'–'+w.last:''} ${mon}</div></div><div class="bar"><i style="width:${Math.min(100,w.h/40*100)}%"></i></div><b class="wh">${w.h?fmtH(w.h):'–'}</b></div>`).join('');
+  renderToday();
 }
 function saveDef(){S.def={s:$('ds').value||'14:30',e:$('de').value||'23:00',p:+$('dp').value||0};S.wage=parseFloat(($('dw').value||'').replace(',','.'))||0;save();renderAgenda()}
 function quickToday(){const l0=xpState().lvl;S.shifts[ymd(new Date())]={...S.def};save();render();toast('+10 XP');lvlCheck(l0)}

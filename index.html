@@ -42,6 +42,15 @@ label{font-size:13px;color:var(--mu);display:block;margin-bottom:2px}
 .sheet.on{display:flex}
 .sheet>div{background:var(--card);width:100%;max-width:560px;margin:0 auto;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
 .hide{display:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:20px;background:var(--bg);border:2px solid var(--bd);font-weight:600;font-size:14px;cursor:pointer}
+.chip.on{background:var(--ac2);border-color:var(--ac);color:var(--ac)}
+.chip .st{display:inline-flex;align-items:center;gap:4px}
+.chip .st b{min-width:18px;text-align:center}
+.chip .st i{font-style:normal;width:24px;height:24px;line-height:22px;text-align:center;border-radius:12px;background:var(--ac);color:#fff}
+textarea{font:inherit;width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);margin-bottom:8px;min-height:60px;resize:vertical}
+pre{white-space:pre-wrap;background:var(--bg);border-radius:10px;padding:12px;font:14px/1.4 ui-monospace,monospace;margin:0 0 10px}
+.sm{padding:4px 10px;font-size:13px}
 </style>
 </head>
 <body>
@@ -70,9 +79,21 @@ label{font-size:13px;color:var(--mu);display:block;margin-bottom:2px}
     <div class="row" style="margin-top:8px"><input id="nc" placeholder="Nieuwe categorie" style="margin:0"><button onclick="addCat()" style="flex:0 0 auto">Toevoegen</button></div></div>
   <div class="card"><h2>Back-up</h2><div class="row"><button onclick="exportData()">Exporteer</button><button onclick="document.getElementById('imp').click()">Importeer</button></div><input type="file" id="imp" class="hide" accept=".json" onchange="importData(this)"></div>
 </section>
+
+<section id="v-logboek" class="hide">
+  <div class="nav"><button onclick="mv(-1)">‹</button><b id="mlabel3"></b><button onclick="mv(1)">›</button></div>
+  <div class="card"><div class="row"><div><label>Datum</label><input type="date" id="ldate" onchange="logDate=this.value||logDate;render()"></div><div><label>Winkelnummer</label><input id="lstore" onchange="S.store=this.value.trim()||'5873';save();renderLog()"></div></div>
+    <div class="row"><div><label>Weg gegaan om</label><input type="time" id="lend" onchange="setEnd(this.value)"></div><div><label>Dienst</label><div id="lshift" class="big" style="font-size:22px;padding-top:6px"></div></div></div>
+  </div>
+  <div id="lsecs"></div>
+  <div class="card"><h2>Overige</h2><textarea id="lx-over" oninput="setX('over',this.value)"></textarea></div>
+  <div class="card"><h2>Logboek</h2><pre id="lprev"></pre>
+    <div class="row"><button class="p" onclick="copyLog()">Kopieer</button><button onclick="dlLog()">Download .txt</button></div></div>
+  <div class="card"><h2>Overzicht gewerkt</h2><div class="mu" id="lsum"></div><div id="lover"></div></div>
+</section>
 </main>
 
-<div class="tabs"><button id="t-agenda" class="on" onclick="tab('agenda')">📅 Agenda</button><button id="t-uitgaven" onclick="tab('uitgaven')">💶 Uitgaven</button></div>
+<div class="tabs"><button id="t-agenda" class="on" onclick="tab('agenda')">📅 Agenda</button><button id="t-uitgaven" onclick="tab('uitgaven')">💶 Uitgaven</button><button id="t-logboek" onclick="tab('logboek')">📝 Logboek</button></div>
 
 <div class="sheet" id="sheet" onclick="if(event.target===this)closeSheet()"><div>
   <h2 id="sdate"></h2>
@@ -87,16 +108,22 @@ let S;
 try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
 S=S||{};
 S.shifts=S.shifts||{};            // 'YYYY-MM-DD' -> {s,e,p}
-S.def=S.def||{s:'09:00',e:'17:00',p:30};
+S.def=S.def||{s:'14:30',e:'23:00',p:30};
 S.cats=S.cats||['Boodschappen','Vaste lasten','Eten & drinken','Vervoer','Gezondheid','Vrije tijd','Overig'];
-S.exp=S.exp||[];                  // {id,d,a,c,n}
+S.exp=S.exp||[];
+S.store=S.store||'5873';
+S.logs=S.logs||{};                // 'YYYY-MM-DD' -> {on:{sec:[zinnen]},n:{zin:aantal},x:{sec:extra},end}
+S.lt=S.lt||{pers:['Iedereen top vanavond!','4 man tijdens vers vracht is erg weinig.','Lijkt me handiger om 5 man te hebben tussen 17.00/21.00 ivm fris en vers vullen.'],
+ winkel:['# dolly vers','# kar hb','hb restanten gelopen','lege vakken gelopen'],
+ haccp:['koffiehoek'],
+ diefstal:['Paar pogingen tot gestopt in de winkel','Geen diefstal gezien']};                  // {id,d,a,c,n}
 const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
 const pad=n=>String(n).padStart(2,'0');
 const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const eur=n=>n.toLocaleString('nl-NL',{style:'currency',currency:'EUR'});
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let cur=new Date();cur.setDate(1);
-let curTab='agenda',editDate=null;
+let curTab='agenda',editDate=null,logDate=ymd(new Date()),editLt=false;
 
 function hours(x){
   const [a,b]=x.s.split(':').map(Number),[c,d]=x.e.split(':').map(Number);
@@ -108,11 +135,11 @@ const monthKey=()=>`${cur.getFullYear()}-${pad(cur.getMonth()+1)}`;
 const monthName=()=>cur.toLocaleDateString('nl-NL',{month:'long',year:'numeric'});
 
 function mv(n){cur.setMonth(cur.getMonth()+n);render()}
-function tab(t){curTab=t;['agenda','uitgaven'].forEach(x=>{$('v-'+x).classList.toggle('hide',x!==t);$('t-'+x).classList.toggle('on',x===t)});render()}
+function tab(t){curTab=t;['agenda','uitgaven','logboek'].forEach(x=>{$('v-'+x).classList.toggle('hide',x!==t);$('t-'+x).classList.toggle('on',x===t)});render()}
 
 function render(){
-  $('mlabel').textContent=$('mlabel2').textContent=monthName();
-  curTab==='agenda'?renderAgenda():renderExp();
+  $('mlabel').textContent=$('mlabel2').textContent=$('mlabel3').textContent=monthName();
+  curTab==='agenda'?renderAgenda():curTab==='uitgaven'?renderExp():renderLog();
 }
 
 function renderAgenda(){
@@ -181,6 +208,68 @@ function importData(inp){
   const f=inp.files[0];if(!f)return;
   f.text().then(t=>{const d=JSON.parse(t);if(!confirm('Huidige gegevens vervangen door back-up?'))return;S=d;save();location.reload()}).catch(()=>alert('Ongeldig bestand'));
 }
+/* ---------- Logboek ---------- */
+const SEC=[['pers','Personeel',0],['winkel','Winkel',1],['haccp','HACCP',1],['diefstal','Diefstal',0]]; // [key,naam,bullets?]
+const fresh=()=>({on:{pers:[],winkel:[],haccp:[],diefstal:[]},n:{},x:{},end:S.def.e});
+const getLog=d=>{const L=S.logs[d]||fresh();L.on=L.on||{};L.n=L.n||{};L.x=L.x||{};SEC.forEach(s=>L.on[s[0]]=L.on[s[0]]||[]);return L};
+function commit(L){ // opslaan + dienst in agenda zetten
+  S.logs[logDate]=L;
+  S.shifts[logDate]={s:S.def.s,e:L.end||S.def.e,p:S.def.p};
+  save();
+}
+function tg(k,i){const L=getLog(logDate),z=S.lt[k][i],a=L.on[k],j=a.indexOf(z);j<0?a.push(z):a.splice(j,1);commit(L);renderLog()}
+function stp(k,i,d){const L=getLog(logDate),z=S.lt[k][i];L.n[z]=Math.max(1,(L.n[z]||1)+d);commit(L);renderLog()}
+function setX(k,v){const L=getLog(logDate);L.x[k]=v;commit(L);updPrev()}
+function setEnd(v){if(!v)return;const L=getLog(logDate);L.end=v;commit(L);renderLog()}
+function addLt(k){const el=$('nl-'+k),v=el.value.trim();if(v&&!S.lt[k].includes(v)){S.lt[k].push(v);save();renderLog()}}
+function delLt(k,i){S.lt[k].splice(i,1);save();renderLog()}
+
+function logText(d){
+  const L=getLog(d),[y,m,dd]=d.split('-');
+  let t=`${S.store} ${dd}/${m}\n`;
+  SEC.forEach(([k,name,bul])=>{
+    const lines=S.lt[k].filter(z=>L.on[k].includes(z)).map(z=>z.replace('#',L.n[z]||1));
+    const ex=(L.x[k]||'').trim();
+    if(ex)lines.push(...ex.split('\n').filter(Boolean));
+    t+=`\n${name}\n`+lines.map(l=>(bul?'- ':'')+l).join('\n')+(lines.length?'\n':'');
+  });
+  t+=`\nOverige\n`+((L.x.over||'').trim()?(L.x.over.trim()+'\n'):'');
+  return t;
+}
+function updPrev(){$('lprev').textContent=logText(logDate)}
+function renderLog(){
+  const L=getLog(logDate);
+  $('ldate').value=logDate;$('lstore').value=S.store;$('lend').value=L.end||S.def.e;
+  const sh={s:S.def.s,e:L.end||S.def.e,p:S.def.p};
+  $('lshift').textContent=`${sh.s}–${sh.e} · ${fmtH(hours(sh))}`;
+  $('lsecs').innerHTML=SEC.map(([k,name])=>{
+    const chips=S.lt[k].map((z,i)=>{
+      const on=L.on[k].includes(z),num=z.includes('#');
+      const label=esc(on&&num?z.replace('#',''):z.replace('#','…'));
+      const st=on&&num?`<span class="st"><i onclick="event.stopPropagation();stp('${k}',${i},-1)">−</i><b>${L.n[z]||1}</b><i onclick="event.stopPropagation();stp('${k}',${i},1)">+</i></span>`:'';
+      return `<span class="chip${on?' on':''}" onclick="tg('${k}',${i})">${st}${label}${editLt?`<i onclick="event.stopPropagation();delLt('${k}',${i})" style="font-style:normal;color:var(--bad)">✕</i>`:''}</span>`;
+    }).join('');
+    const add=editLt?`<div class="row" style="margin-bottom:8px"><input id="nl-${k}" placeholder="Nieuwe zin (# = aantal)" style="margin:0"><button onclick="addLt('${k}')" style="flex:0 0 auto">+</button></div>`:'';
+    return `<div class="card"><div class="li" style="border:0;padding:0 0 8px"><h2 style="margin:0">${name}</h2>${k==='pers'?`<button class="sm" onclick="editLt=!editLt;renderLog()">${editLt?'Klaar':'Zinnen aanpassen'}</button>`:''}</div><div class="chips">${chips}</div>${add}<textarea placeholder="Extra…" oninput="setX('${k}',this.value)">${esc(L.x[k]||'')}</textarea></div>`;
+  }).join('');
+  $('lx-over').value=L.x.over||'';
+  updPrev();
+  // overzicht van de maand
+  const mk=monthKey(),days=Object.keys(S.shifts).filter(d=>d.startsWith(mk)).sort().reverse();
+  let tot=0;days.forEach(d=>tot+=hours(S.shifts[d]));
+  $('lsum').textContent=`${days.length} ${days.length===1?'dienst':'diensten'} · ${fmtH(tot)} in ${monthName()}`;
+  $('lover').innerHTML=days.map(d=>{const s=S.shifts[d];return `<div class="li" style="cursor:pointer" onclick="logDate='${d}';render();scrollTo(0,0)"><span>${new Date(d+'T12:00').toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short'})}${S.logs[d]?' 📝':''}</span><span class="amt">${s.s}–${s.e} · ${fmtH(hours(s))}</span></div>`}).join('');
+}
+function copyLog(){
+  const t=logText(logDate);
+  (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>alert('Gekopieerd!')).catch(()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');a.remove();alert('Gekopieerd!')});
+}
+function dlLog(){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([logText(logDate)],{type:'text/plain'}));
+  a.download=`logboek-${logDate}.txt`;a.click();
+}
+
 render();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>

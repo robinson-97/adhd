@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#4f46e5">
+<link rel="manifest" href="manifest.json">
+<title>Overzicht</title>
+<style>
+:root{--bg:#f6f6fb;--card:#fff;--tx:#1f2037;--mu:#757593;--ac:#4f46e5;--ac2:#e0e7ff;--ok:#16a34a;--bad:#dc2626;--bd:#e5e5f0}
+@media(prefers-color-scheme:dark){:root{--bg:#14142a;--card:#1f2040;--tx:#ececff;--mu:#9a9abf;--ac:#818cf8;--ac2:#2d2f63;--bd:#32345e}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 system-ui,sans-serif;padding-bottom:84px}
+main{max-width:560px;margin:0 auto;padding:16px}
+h2{margin:0 0 8px;font-size:18px}
+.card{background:var(--card);border-radius:16px;padding:14px;margin-bottom:14px;box-shadow:0 1px 3px #0001}
+.nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.nav b{font-size:20px;text-transform:capitalize}
+button{font:inherit;border:0;border-radius:12px;padding:10px 14px;background:var(--ac2);color:var(--ac);font-weight:600;cursor:pointer}
+button.p{background:var(--ac);color:#fff}
+button.d{background:#fee2e2;color:var(--bad)}
+.big{font-size:34px;font-weight:800;color:var(--ac)}
+.mu{color:var(--mu);font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.dh{text-align:center;font-size:12px;color:var(--mu);padding:4px 0}
+.day{aspect-ratio:1;border-radius:12px;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:600;cursor:pointer;border:2px solid transparent;position:relative}
+.day small{font-size:11px;font-weight:600}
+.day.w{background:var(--ac);color:#fff}
+.day.t{border-color:var(--ac)}
+.day.e{visibility:hidden}
+tabbar,.tabs{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:1px solid var(--bd);padding:8px 8px calc(8px + env(safe-area-inset-bottom));gap:8px}
+.tabs button{flex:1;background:none;color:var(--mu)}
+.tabs button.on{background:var(--ac2);color:var(--ac)}
+input,select{font:inherit;width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);margin-bottom:8px}
+label{font-size:13px;color:var(--mu);display:block;margin-bottom:2px}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.li{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--bd)}
+.li:last-child{border:0}
+.amt{font-weight:700;white-space:nowrap}
+.bar{height:8px;border-radius:4px;background:var(--ac);margin-top:4px}
+.sheet{position:fixed;inset:0;background:#0007;display:none;align-items:flex-end;z-index:5}
+.sheet.on{display:flex}
+.sheet>div{background:var(--card);width:100%;max-width:560px;margin:0 auto;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+.hide{display:none}
+</style>
+</head>
+<body>
+<main>
+<section id="v-agenda">
+  <div class="nav"><button onclick="mv(-1)">‹</button><b id="mlabel"></b><button onclick="mv(1)">›</button></div>
+  <div class="card"><div class="mu">Gewerkt deze maand</div><div class="big" id="total">0u</div><div class="mu" id="dayscount"></div></div>
+  <div class="card"><div class="grid" id="cal"></div><p class="mu" style="margin:10px 0 0">Tik op een dag om je dienst in te vullen.</p></div>
+  <div class="card"><h2>Standaard dienst</h2>
+    <div class="row"><div><label>Start</label><input type="time" id="ds" onchange="saveDef()"></div><div><label>Einde</label><input type="time" id="de" onchange="saveDef()"></div><div><label>Pauze (min)</label><input type="number" id="dp" min="0" onchange="saveDef()"></div></div>
+  </div>
+</section>
+
+<section id="v-uitgaven" class="hide">
+  <div class="nav"><button onclick="mv(-1)">‹</button><b id="mlabel2"></b><button onclick="mv(1)">›</button></div>
+  <div class="card"><div class="mu">Uitgegeven deze maand</div><div class="big" id="spent">€0,00</div></div>
+  <div class="card"><h2>Nieuwe uitgave</h2>
+    <div class="row"><div><label>Bedrag (€)</label><input id="xa" type="text" inputmode="decimal" placeholder="0,00"></div><div><label>Datum</label><input id="xd" type="date"></div></div>
+    <label>Categorie</label><select id="xc"></select>
+    <label>Notitie (optioneel)</label><input id="xn">
+    <button class="p" style="width:100%" onclick="addExp()">Toevoegen</button>
+  </div>
+  <div class="card"><h2>Per categorie</h2><div id="bycat"></div></div>
+  <div class="card"><h2>Uitgaven</h2><div id="list"></div></div>
+  <div class="card"><h2>Categorieën</h2><div id="cats"></div>
+    <div class="row" style="margin-top:8px"><input id="nc" placeholder="Nieuwe categorie" style="margin:0"><button onclick="addCat()" style="flex:0 0 auto">Toevoegen</button></div></div>
+  <div class="card"><h2>Back-up</h2><div class="row"><button onclick="exportData()">Exporteer</button><button onclick="document.getElementById('imp').click()">Importeer</button></div><input type="file" id="imp" class="hide" accept=".json" onchange="importData(this)"></div>
+</section>
+</main>
+
+<div class="tabs"><button id="t-agenda" class="on" onclick="tab('agenda')">📅 Agenda</button><button id="t-uitgaven" onclick="tab('uitgaven')">💶 Uitgaven</button></div>
+
+<div class="sheet" id="sheet" onclick="if(event.target===this)closeSheet()"><div>
+  <h2 id="sdate"></h2>
+  <div class="row"><div><label>Start</label><input type="time" id="ss"></div><div><label>Einde</label><input type="time" id="se"></div><div><label>Pauze (min)</label><input type="number" id="sp" min="0"></div></div>
+  <div class="row"><button class="p" onclick="saveDay()">Opslaan</button><button class="d" id="sdel" onclick="delDay()">Vrij</button></div>
+</div></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const KEY='adhd-app-v1';
+let S;
+try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+S=S||{};
+S.shifts=S.shifts||{};            // 'YYYY-MM-DD' -> {s,e,p}
+S.def=S.def||{s:'09:00',e:'17:00',p:30};
+S.cats=S.cats||['Boodschappen','Vaste lasten','Eten & drinken','Vervoer','Gezondheid','Vrije tijd','Overig'];
+S.exp=S.exp||[];                  // {id,d,a,c,n}
+const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const eur=n=>n.toLocaleString('nl-NL',{style:'currency',currency:'EUR'});
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let cur=new Date();cur.setDate(1);
+let curTab='agenda',editDate=null;
+
+function hours(x){
+  const [a,b]=x.s.split(':').map(Number),[c,d]=x.e.split(':').map(Number);
+  let m=(c*60+d)-(a*60+b); if(m<=0)m+=1440;       // nachtdienst
+  return Math.max(0,m-(+x.p||0))/60;
+}
+const fmtH=h=>{const m=Math.round(h*60);return m%60?`${Math.floor(m/60)}u ${m%60}m`:`${m/60}u`};
+const monthKey=()=>`${cur.getFullYear()}-${pad(cur.getMonth()+1)}`;
+const monthName=()=>cur.toLocaleDateString('nl-NL',{month:'long',year:'numeric'});
+
+function mv(n){cur.setMonth(cur.getMonth()+n);render()}
+function tab(t){curTab=t;['agenda','uitgaven'].forEach(x=>{$('v-'+x).classList.toggle('hide',x!==t);$('t-'+x).classList.toggle('on',x===t)});render()}
+
+function render(){
+  $('mlabel').textContent=$('mlabel2').textContent=monthName();
+  curTab==='agenda'?renderAgenda():renderExp();
+}
+
+function renderAgenda(){
+  const y=cur.getFullYear(),m=cur.getMonth(),n=new Date(y,m+1,0).getDate();
+  const off=(new Date(y,m,1).getDay()+6)%7, today=ymd(new Date());
+  let h='';
+  ['ma','di','wo','do','vr','za','zo'].forEach(d=>h+=`<div class="dh">${d}</div>`);
+  for(let i=0;i<off;i++)h+='<div class="day e"></div>';
+  let tot=0,cnt=0;
+  for(let d=1;d<=n;d++){
+    const k=`${y}-${pad(m+1)}-${pad(d)}`,sh=S.shifts[k];
+    if(sh){tot+=hours(sh);cnt++}
+    h+=`<div class="day${sh?' w':''}${k===today?' t':''}" onclick="openDay('${k}')">${d}${sh?`<small>${+hours(sh).toFixed(1)}u</small>`:''}</div>`;
+  }
+  $('cal').innerHTML=h;
+  $('total').textContent=fmtH(tot);
+  $('dayscount').textContent=`${cnt} ${cnt===1?'dag':'dagen'} gewerkt`;
+  $('ds').value=S.def.s;$('de').value=S.def.e;$('dp').value=S.def.p;
+}
+function saveDef(){S.def={s:$('ds').value||'09:00',e:$('de').value||'17:00',p:+$('dp').value||0};save();renderAgenda()}
+
+function openDay(k){
+  editDate=k;const sh=S.shifts[k]||S.def;
+  $('sdate').textContent=new Date(k+'T12:00').toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'});
+  $('ss').value=sh.s;$('se').value=sh.e;$('sp').value=sh.p;
+  $('sdel').style.display=S.shifts[k]?'':'none';
+  $('sheet').classList.add('on');
+}
+function closeSheet(){$('sheet').classList.remove('on')}
+function saveDay(){
+  if(!$('ss').value||!$('se').value)return;
+  S.shifts[editDate]={s:$('ss').value,e:$('se').value,p:+$('sp').value||0};save();closeSheet();render();
+}
+function delDay(){delete S.shifts[editDate];save();closeSheet();render()}
+
+function renderExp(){
+  const mk=monthKey();
+  $('xc').innerHTML=S.cats.map(c=>`<option>${esc(c)}</option>`).join('');
+  if(!$('xd').value)$('xd').value=ymd(new Date());
+  const items=S.exp.filter(e=>e.d.startsWith(mk)).sort((a,b)=>b.d.localeCompare(a.d));
+  const tot=items.reduce((s,e)=>s+e.a,0);
+  $('spent').textContent=eur(tot);
+  const by={};items.forEach(e=>by[e.c]=(by[e.c]||0)+e.a);
+  const rows=Object.entries(by).sort((a,b)=>b[1]-a[1]);
+  $('bycat').innerHTML=rows.length?rows.map(([c,v])=>`<div style="margin-bottom:10px"><div class="li" style="padding:0;border:0"><span>${esc(c)}</span><span class="amt">${eur(v)}</span></div><div class="bar" style="width:${v/rows[0][1]*100}%"></div></div>`).join(''):'<div class="mu">Nog niets deze maand.</div>';
+  $('list').innerHTML=items.length?items.map(e=>`<div class="li"><div><div>${esc(e.n||e.c)}</div><div class="mu">${new Date(e.d+'T12:00').toLocaleDateString('nl-NL',{day:'numeric',month:'short'})} · ${esc(e.c)}</div></div><div><span class="amt">${eur(e.a)}</span> <button class="d" style="padding:4px 8px" onclick="delExp(${e.id})">✕</button></div></div>`).join(''):'<div class="mu">Geen uitgaven.</div>';
+  $('cats').innerHTML=S.cats.map((c,i)=>`<div class="li"><span>${esc(c)}</span><button class="d" style="padding:4px 8px" onclick="delCat(${i})">✕</button></div>`).join('');
+}
+function addExp(){
+  const a=parseFloat($('xa').value.replace(',','.'));
+  if(!(a>0)||!$('xd').value)return;
+  S.exp.push({id:Date.now(),d:$('xd').value,a,c:$('xc').value,n:$('xn').value.trim()});
+  save();$('xa').value='';$('xn').value='';
+  const [y,m]=$('xd').value.split('-');cur=new Date(+y,+m-1,1);render();
+}
+function delExp(id){S.exp=S.exp.filter(e=>e.id!==id);save();render()}
+function addCat(){const v=$('nc').value.trim();if(v&&!S.cats.includes(v)){S.cats.push(v);save();$('nc').value='';render()}}
+function delCat(i){if(confirm('Categorie verwijderen? Bestaande uitgaven blijven staan.')){S.cats.splice(i,1);save();render()}}
+
+function exportData(){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:'application/json'}));
+  a.download=`backup-${ymd(new Date())}.json`;a.click();
+}
+function importData(inp){
+  const f=inp.files[0];if(!f)return;
+  f.text().then(t=>{const d=JSON.parse(t);if(!confirm('Huidige gegevens vervangen door back-up?'))return;S=d;save();location.reload()}).catch(()=>alert('Ongeldig bestand'));
+}
+render();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>

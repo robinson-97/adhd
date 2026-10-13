@@ -353,7 +353,7 @@ S.profiles=S.profiles||[{name:'Rustige dag',on:{pers:['Iedereen top vanavond!'],
 S.store=S.store||'5873';
 S.logs=S.logs||{};                // 'YYYY-MM-DD' -> {on:{sec:[zinnen]},n:{zin:aantal},x:{sec:extra},end}
 S.lt=S.lt||{pers:['Iedereen top vanavond!','4 man tijdens vers vracht is erg weinig.','Lijkt me handiger om 5 man te hebben tussen 17.00/21.00 ivm fris en vers vullen.'],
- winkel:['# dolly vers','# kar hb','hb restanten gelopen','lege vakken gelopen'],
+ winkel:['# dolly vers','# rollie vers','# kar hb','hb restanten gelopen','lege vakken gelopen'],
  haccp:['koffiehoek'],
  diefstal:['Paar pogingen tot gestopt in de winkel','Geen diefstal gezien']};                  // {id,d,a,c,n}
 let saveWarned=false;
@@ -363,6 +363,7 @@ S.goals=S.goals||[];
 S.off=S.off||{};                  // 'YYYY-MM-DD' -> vrij|vak|ziek
 S.notes=S.notes||[];
 S.labels=S.labels||['werk','thuis','bellen','kopen'];
+if(!S.rolliMig){S.rolliMig=true;if(!S.lt.winkel.some(z=>/rollie/i.test(z))){const i=S.lt.winkel.indexOf('# dolly vers');S.lt.winkel.splice(i>=0?i+1:0,0,'# rollie vers')}}
 S.use=S.use||{};['pers','winkel','haccp','diefstal'].forEach(k=>S.use[k]=S.use[k]||{});              // {id,t,done,star}
 if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
 const pad=n=>String(n).padStart(2,'0');

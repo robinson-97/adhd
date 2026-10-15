@@ -154,18 +154,30 @@ input,textarea,pre,.nt,#lprev{-webkit-user-select:text;user-select:text}
 @media(display-mode:standalone){main{padding-top:calc(12px + env(safe-area-inset-top))}}
 :root[data-theme=light]{--bg:#f6f6f4;--card:#ffffff;--raise:#efefec;--bd:#e0e0da;--bd2:#ececE7;--tx:#25272c;--mu:#666b75;--dim:#9a9fa8;--ac:#3e6fb0;--hi:#2d578f;--sel:#e3edf9;--ok:#3f7a58;--okbg:#4a78ad;--bad:#b5474e;--warn:#99702a;--ink:#ffffff;--on:#ffffff;--bbd:#d9d9d2;--hover:#e8e8e4;--pbd:#4a78ad;--pho:#3f6aa0;--dangerbd:#b5474e55;--ring:#3e6fb033;--acline:#9fbbdf;--selbd:#3e6fb0;--okfill:#e3edf9;--okline:#9fbbdf;--oktx:#2d578f;--vakbg:#ece8f9;--vaktx:#5a4aa6;--zbg:#f9e8ea;--zbd:#d99ca1;--ztx:#9c3a42;--toasttx:#2d578f;--overlay:#1f232880;--shadow:#1f232822;color-scheme:light}
 @media(prefers-color-scheme:light){:root:not([data-theme=dark]){--bg:#f6f6f4;--card:#ffffff;--raise:#efefec;--bd:#e0e0da;--bd2:#ececE7;--tx:#25272c;--mu:#666b75;--dim:#9a9fa8;--ac:#3e6fb0;--hi:#2d578f;--sel:#e3edf9;--ok:#3f7a58;--okbg:#4a78ad;--bad:#b5474e;--warn:#99702a;--ink:#ffffff;--on:#ffffff;--bbd:#d9d9d2;--hover:#e8e8e4;--pbd:#4a78ad;--pho:#3f6aa0;--dangerbd:#b5474e55;--ring:#3e6fb033;--acline:#9fbbdf;--selbd:#3e6fb0;--okfill:#e3edf9;--okline:#9fbbdf;--oktx:#2d578f;--vakbg:#ece8f9;--vaktx:#5a4aa6;--zbg:#f9e8ea;--zbd:#d99ca1;--ztx:#9c3a42;--toasttx:#2d578f;--overlay:#1f232880;--shadow:#1f232822;color-scheme:light}}
+.spaces{display:inline-flex;gap:2px;padding:3px;background:var(--raise);border-radius:999px;border:1px solid var(--bd)}
+.spaces button{border:0;border-radius:999px;background:none;color:var(--mu);padding:7px 14px;font-size:14px;font-weight:500}
+.spaces button.on{background:var(--okbg);color:#fff}
+body[data-space=vrij] .werk-only{display:none!important}
+body[data-space=werk] .vrij-only{display:none!important}
+body[data-space=vrij]{--ac:#8fcfb0;--hi:#b8e6d0;--sel:#24403a;--okbg:#4c8f78;--pbd:#5aa08a;--pho:#5aa08a;--okfill:#24403a;--okline:#4d8f78;--oktx:#b8e6d0;--acline:#8fcfb066;--selbd:#5aa08a;--ring:#8fcfb055;--toasttx:#d8f3e6}
+:root[data-theme=light] body[data-space=vrij]{--ac:#2f8a6a;--hi:#1f6a50;--sel:#e0f3ea;--okbg:#3f8f72;--pbd:#3f8f72;--pho:#357d63;--okfill:#e0f3ea;--okline:#9bd1b9;--oktx:#1f6a50;--acline:#9bd1b9;--selbd:#2f8a6a;--ring:#2f8a6a33;--toasttx:#1f6a50}
+@media(prefers-color-scheme:light){:root:not([data-theme=dark]) body[data-space=vrij]{--ac:#2f8a6a;--hi:#1f6a50;--sel:#e0f3ea;--okbg:#3f8f72;--pbd:#3f8f72;--pho:#357d63;--okfill:#e0f3ea;--okline:#9bd1b9;--oktx:#1f6a50;--acline:#9bd1b9;--selbd:#2f8a6a;--ring:#2f8a6a33;--toasttx:#1f6a50}}
+.day.has{background:var(--okfill);color:var(--oktx);font-weight:600}
+.day.sel:not(.t){border:2px solid var(--okline)}
+.day .pdot{position:absolute;bottom:5px;width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.7}
+.plan-time{font-weight:600;color:var(--ac);margin-right:6px}
 </style>
 </head>
 <body>
 <main>
 <div class="xpline"><i id="xpfill"></i></div>
-<div class="topbar"><h1 id="tbtitle"></h1><button class="lvlchip" id="lvlchip" onclick="openProg()"></button></div>
+<div class="topbar"><div class="spaces" role="group" aria-label="Werk of vrije tijd"><button id="sp-werk" onclick="setSpace('werk')">Werk</button><button id="sp-vrij" onclick="setSpace('vrij')">Vrije tijd</button></div><button class="lvlchip" id="lvlchip" onclick="openProg()"></button></div>
 <div id="toast" role="status" aria-live="polite"></div>
-<section id="v-vandaag"><div class="vdate" id="vdate"></div><div id="vd"></div></section>
+<section id="v-vandaag" class="hide"><div class="vdate" id="vdate"></div><div id="vd"></div></section>
 
-<section id="v-agenda" class="hide">
+<section id="v-agenda">
   <div class="card hide" id="bk"></div>
-  <div class="seg"><button id="as-cal" onclick="ago('cal')">kalender</button><button id="as-over" onclick="ago('over')">overzicht</button><button id="as-set" onclick="ago('set')">instellingen</button></div>
+  <div class="seg"><button id="as-cal" onclick="ago('cal')">kalender</button><button id="as-over" class="werk-only" onclick="ago('over')">overzicht</button><button id="as-set" onclick="ago('set')">instellingen</button></div>
   <div class="nav" id="anav"><button onclick="mv(-1)" aria-label="Vorige maand">‹</button><b id="mlabel"></b><button onclick="mv(1)" aria-label="Volgende maand">›</button></div>
 
   <div id="a-cal">
@@ -173,9 +185,10 @@ input,textarea,pre,.nt,#lprev{-webkit-user-select:text;user-select:text}
       <div class="cal" id="cal"></div>
       <p class="mu" id="calkey" style="text-align:center;margin:14px 0 0"></p>
     </div>
+    <div class="card vrij-only" id="vplans"></div>
   </div>
 
-  <div id="a-over" class="hide">
+  <div id="a-over" class="hide werk-only">
     <div class="card"><h2>Overzicht</h2>
       <div class="li" style="border:0;padding:0 0 10px;align-items:flex-end">
         <div><div class="mu" id="mname"></div><div class="big" id="total">0u</div></div>
@@ -190,10 +203,10 @@ input,textarea,pre,.nt,#lprev{-webkit-user-select:text;user-select:text}
 
   <div id="a-set" class="hide">
     <div class="card" id="appcard"><h2>App</h2><div class="mu" id="apptxt" style="margin-bottom:8px"></div><div class="mu" id="appver" style="margin-bottom:8px"></div><button class="sm" style="margin-bottom:8px" onclick="location.reload()">nu verversen</button><button class="p hide" id="appbtn" style="width:100%" onclick="installApp()">Installeer app</button></div>
-    <div class="card"><h2>Standaard dienst</h2>
+    <div class="card werk-only"><h2>Standaard dienst</h2>
       <div class="row"><div><label for="ds">Start</label><input type="time" id="ds" onchange="saveDef()"></div><div><label for="de">Einde</label><input type="time" id="de" onchange="saveDef()"></div><div><label for="dp">Pauze min</label><input type="number" id="dp" min="0" onchange="saveDef()"></div></div>
     </div>
-    <div class="card"><h2>Loon (cao VGL)</h2>
+    <div class="card werk-only"><h2>Loon (cao VGL)</h2>
       <div class="row"><div><label for="ps">Schaal</label><select id="ps" onchange="savePay()"></select></div><div><label for="pt">Trede</label><select id="pt" onchange="savePay()"></select></div></div>
       <div class="row"><div><label for="pu">Uren/week</label><input id="pu" type="number" min="0" step="0.5" onchange="savePay()"></div><div><label for="pf">Voltijd uren</label><input id="pf" type="number" min="1" step="0.5" onchange="savePay()"></div><div><label for="pn">Netto %</label><input id="pn" type="text" inputmode="decimal" onchange="savePay()"></div></div>
       <div class="row"><div><label for="pa">Avond/nacht %</label><input id="pa" type="number" min="0" onchange="savePay()"></div><div><label for="pz">Zondag %</label><input id="pz" type="number" min="0" onchange="savePay()"></div><div><label for="pfe">Feestdag %</label><input id="pfe" type="number" min="0" onchange="savePay()"></div></div>
@@ -205,7 +218,7 @@ input,textarea,pre,.nt,#lprev{-webkit-user-select:text;user-select:text}
       <div class="seg" style="margin:0"><button id="th-auto" onclick="setTheme('auto')">auto</button><button id="th-licht" onclick="setTheme('licht')">licht</button><button id="th-donker" onclick="setTheme('donker')">donker</button></div>
     </div>
     <div class="card"><h2>Back-up</h2><div class="mu" id="bkinfo" style="margin-bottom:8px"></div><div class="row"><button onclick="exportData()">Exporteer</button><button onclick="document.getElementById('imp').click()">Importeer</button></div><button id="restore" class="hide" style="width:100%;margin-top:8px" onclick="restorePrev()">↩ Herstel vorige gegevens</button><input type="file" id="imp" class="hide" accept=".json" onchange="importData(this)"></div>
-    <div class="card"><h2>Herinnering</h2>
+    <div class="card werk-only"><h2>Herinnering</h2>
       <p class="mu" style="margin-top:0">Een agenda-bestand met een melding aan het einde van elke geplande dienst. Open het op je telefoon om het toe te voegen.</p>
       <button onclick="dlIcs()" style="width:100%">Zet herinneringen in mijn agenda</button>
     </div>
@@ -225,6 +238,15 @@ input,textarea,pre,.nt,#lprev{-webkit-user-select:text;user-select:text}
   <button class="sm" style="width:100%;margin-bottom:8px" onclick="dlIcsNotes()">deadlines → mijn agenda (herinneringen)</button>
 </section>
 
+<section id="v-dagboek" class="hide">
+  <div class="card">
+    <div class="row" style="align-items:center;gap:6px;margin-bottom:14px"><button onclick="shiftDiary(-1)" style="flex:0 0 auto" aria-label="Vorige dag">‹</button><input type="date" id="ddate" style="margin:0" onchange="dDate=this.value||dDate;renderDagboek()"><button onclick="shiftDiary(1)" style="flex:0 0 auto" aria-label="Volgende dag">›</button></div>
+    <label>Energie</label><div class="chips" id="dener"></div>
+    <label for="dtext">Hoe was je dag?</label><textarea id="dtext" oninput="setDiary('t',this.value)" placeholder="Wat wil je onthouden?" style="min-height:170px;margin:0"></textarea>
+  </div>
+  <details class="card"><summary>Eerdere dagen</summary><div id="dlist"></div></details>
+</section>
+
 <section id="v-logboek" class="hide">
   <div class="card">
     <div class="row" style="align-items:center;gap:6px;margin-bottom:10px"><button onclick="shiftLog(-1)" style="flex:0 0 auto" aria-label="Vorige dag">‹</button><input type="date" id="ldate" style="margin:0" onchange="logDate=this.value||logDate;render()"><button onclick="shiftLog(1)" style="flex:0 0 auto" aria-label="Volgende dag">›</button></div>
@@ -241,7 +263,7 @@ input,textarea,pre,.nt,#lprev{-webkit-user-select:text;user-select:text}
 </section>
 </main>
 
-<div class="tabs"><button id="t-vandaag" class="on" onclick="tab('vandaag')">vandaag</button><button id="t-agenda" onclick="tab('agenda')">agenda</button><button id="t-logboek" onclick="tab('logboek')">logboek</button><button id="t-hoofd" onclick="tab('hoofd')">hoofd</button></div>
+<div class="tabs"><button id="t-agenda" class="on" onclick="tab('agenda')">agenda</button><button id="t-vandaag" onclick="tab('vandaag')">vandaag</button><button id="t-logboek" onclick="tab('logboek')">logboek</button><button id="t-hoofd" onclick="tab('hoofd')">hoofd</button></div>
 
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sdate" onclick="if(event.target===this)closeSheet()"><div>
   <h2 id="sdate"></h2>
@@ -307,6 +329,10 @@ S.goals=S.goals||[];
 S.off=S.off||{};                  // 'YYYY-MM-DD' -> vrij|vak|ziek
 S.notes=S.notes||[];
 S.labels=S.labels||['werk','thuis','bellen','kopen'];
+S.labelsV=S.labelsV||['thuis','boodschappen','bellen','afspraak'];
+S.plans=S.plans||{};              // vrije tijd: 'YYYY-MM-DD' -> [{id,t,time,done}]
+S.diary=S.diary||{};              // vrije tijd: 'YYYY-MM-DD' -> {t,e}
+if(S.space!=='vrij')S.space='werk';
 if(!S.rolliMig){S.rolliMig=true;if(!S.lt.winkel.some(z=>/rollie/i.test(z))){const i=S.lt.winkel.indexOf('# dolly vers');S.lt.winkel.splice(i>=0?i+1:0,0,'# rollie vers')}}
 S.use=S.use||{};['pers','winkel','haccp','diefstal'].forEach(k=>S.use[k]=S.use[k]||{});              // {id,t,done,star}
 if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
@@ -315,7 +341,7 @@ const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const eur=n=>n.toLocaleString('nl-NL',{style:'currency',currency:'EUR'});
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let cur=new Date();cur.setDate(1);
-let curTab='vandaag',editDate=null,logDate=ymd(new Date()),editLt=false;
+let curTab='agenda',editDate=null,logDate=ymd(new Date()),editLt=false;
 
 function hours(x){
   const [a,b]=x.s.split(':').map(Number),[c,d]=x.e.split(':').map(Number);
@@ -327,11 +353,14 @@ const monthKey=()=>`${cur.getFullYear()}-${pad(cur.getMonth()+1)}`;
 const monthName=()=>cur.toLocaleDateString('nl-NL',{month:'long',year:'numeric'});
 
 function mv(n){cur.setMonth(cur.getMonth()+n);render()}
-function tab(t){curTab=t;document.body.dataset.tab=t;['vandaag','agenda','logboek','hoofd'].forEach(x=>{$('v-'+x).classList.toggle('hide',x!==t);$('t-'+x).classList.toggle('on',x===t);$('t-'+x).setAttribute('aria-current',x===t?'page':'false')});render();scrollTo(0,0)}
+const secOf=t=>t==='logboek'&&S.space==='vrij'?'dagboek':t;
+function tab(t){curTab=t;document.body.dataset.tab=t;['vandaag','agenda','logboek','dagboek','hoofd'].forEach(x=>$('v-'+x).classList.toggle('hide',x!==secOf(t)));['vandaag','agenda','logboek','hoofd'].forEach(x=>{$('t-'+x).classList.toggle('on',x===t);$('t-'+x).setAttribute('aria-current',x===t?'page':'false')});render();scrollTo(0,0)}
+function setSpace(sp){if(S.space===sp)return;S.space=sp;save();document.body.dataset.space=sp;nFilter='';apage='cal';tab(curTab)}
 
 function render(){
   $('mlabel').textContent=$('mlabel3').textContent=monthName();
-  curTab==='vandaag'?renderVandaag():curTab==='agenda'?renderAgenda():curTab==='hoofd'?renderHoofd():renderLog();
+  const vr=S.space==='vrij';
+  curTab==='vandaag'?(vr?renderVandaagVrij():renderVandaag()):curTab==='agenda'?renderAgenda():curTab==='hoofd'?renderHoofd():(vr?renderDagboek():renderLog());
   renderTop();renderBk();a11y();
 }
 
@@ -392,6 +421,7 @@ try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTh
 let apage='cal';
 function ago(p){apage=p;renderAgenda()}
 function renderAgenda(){
+  if(S.space==='vrij'){renderAgendaVrij();return}
   ['cal','over','set'].forEach(k=>{$('a-'+k).classList.toggle('hide',k!==apage);$('as-'+k).classList.toggle('on',k===apage)});
   $('anav').classList.toggle('hide',apage==='set');
   renderApp();
@@ -516,15 +546,70 @@ function renderVandaag(){
     else main=`<h2 class="vt">Je werkt tot ${sh.e}</h2><p class="mu" style="margin:0">Nog ${untilTxt(e-now)}. Het logboek komt straks.</p>`;
     main+=`<button class="link" onclick="openDay('${k}')">dienst aanpassen</button>`;
   }
-  const open=S.notes.filter(n=>!n.done),pick=open.filter(n=>n.star||['late','today'].includes(dueState(n))).sort(byDue),shown=pick.slice(0,3),more=pick.length-shown.length;
+  const open=spNotes().filter(n=>!n.done),pick=open.filter(n=>n.star||['late','today'].includes(dueState(n))).sort(byDue),shown=pick.slice(0,3),more=pick.length-shown.length;
   const tasks=`<h2>Voor vandaag</h2>`+(shown.length?shown.map(miniRow).join(''):`<p class="mu" style="margin:0">${open.length?`Niets vastgepind. Je hebt ${open.length} ${open.length===1?'ding':'dingen'} open in je hoofd.`:'Je hoofd is leeg ✓'}</p>`)+(more>0?`<p class="mu" style="margin:8px 0 0">+${more} meer in hoofd</p>`:'')+`<button class="link" onclick="tab('hoofd')">naar hoofd</button>`;
   $('vd').innerHTML=`<div class="card">${main}</div><div class="card">${tasks}</div>`;
 }
-setInterval(()=>{if(curTab==='vandaag'&&!document.hidden)renderVandaag()},60000);
+const byTime=(a,b)=>(a.time||'99:99').localeCompare(b.time||'99:99');
+function planRow(k,p,del){return `<div class="li note"><span class="chk${p.done?' on':''}" role="button" tabindex="0" onclick="togglePlan('${k}',${p.id})" aria-label="Afvinken">${p.done?'✓':''}</span><div class="nt" style="cursor:default"><div class="${p.done?'':''}">${p.time?`<span class="plan-time">${p.time}</span>`:''}${esc(p.t)}</div></div>${del?`<button class="sm d" onclick="delPlan('${k}',${p.id})" aria-label="Verwijderen">✕</button>`:''}</div>`}
+function addPlan(k,tid,tmid){
+  const t=$(tid).value.trim();if(!t){toast('Schrijf eerst iets');return}
+  (S.plans[k]=S.plans[k]||[]).push({id:Date.now(),t,time:tmid?($(tmid).value||''):'',done:false});save();render();
+}
+function togglePlan(k,id){const p=(S.plans[k]||[]).find(x=>x.id===id);if(p){p.done=!p.done;save();render()}}
+function delPlan(k,id){const a=S.plans[k]||[],p=a.find(x=>x.id===id);if(!p)return;S.plans[k]=a.filter(x=>x.id!==id);if(!S.plans[k].length)delete S.plans[k];save();render();toast('Verwijderd',()=>{(S.plans[k]=S.plans[k]||[]).push(p);save();render()})}
+function renderVandaagVrij(){
+  const k=ymd(new Date());
+  {const t=new Date().toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'});$('vdate').textContent=t.charAt(0).toUpperCase()+t.slice(1)}
+  const pl=(S.plans[k]||[]).slice().sort(byTime);
+  const main=`<h2>Vandaag</h2>`+(pl.length?pl.map(p=>planRow(k,p,false)).join(''):`<p class="mu" style="margin:0 0 4px">Niets gepland. Dit is jouw tijd.</p>`)+`<div class="row" style="gap:8px;margin-top:12px"><input id="vq" placeholder="Iets plannen…" style="margin:0" enterkeyhint="done" onkeydown="if(event.key==='Enter')addPlan('${k}','vq')"><button class="p" style="flex:0 0 auto" onclick="addPlan('${k}','vq')">+</button></div>`;
+  const open=spNotes().filter(n=>!n.done),pick=open.filter(n=>n.star||['late','today'].includes(dueState(n))).sort(byDue),shown=pick.slice(0,3),more=pick.length-shown.length;
+  const tasks=`<h2>Voor vandaag</h2>`+(shown.length?shown.map(miniRow).join(''):`<p class="mu" style="margin:0">${open.length?`Niets vastgepind. Je hebt ${open.length} ${open.length===1?'ding':'dingen'} open in je hoofd.`:'Je hoofd is leeg ✓'}</p>`)+(more>0?`<p class="mu" style="margin:8px 0 0">+${more} meer in hoofd</p>`:'')+`<button class="link" onclick="tab('hoofd')">naar hoofd</button>`;
+  const dg=hasDiary(k)?'':`<button class="link" style="padding-top:0" onclick="dDate='${k}';tab('logboek')">dagboek schrijven</button>`;
+  $('vd').innerHTML=`<div class="card">${main}</div><div class="card">${tasks}</div>${dg}`;
+}
+let vSel=ymd(new Date());
+function vPick(k){vSel=k;renderAgendaVrij()}
+function settingsCommon(){
+  renderApp();
+  ['auto','licht','donker'].forEach(t=>$('th-'+t).classList.toggle('on',(S.theme||'auto')===t));
+  $('bkinfo').textContent=S.bk?'Laatste back-up: '+new Date(S.bk).toLocaleDateString('nl-NL',{day:'numeric',month:'long'}):'Nog geen back-up gemaakt.';
+  try{$('restore').classList.toggle('hide',!localStorage.getItem(KEY+'-prev'))}catch(e){}
+}
+function renderAgendaVrij(){
+  if(apage==='over')apage='cal';
+  ['cal','over','set'].forEach(k=>{$('a-'+k).classList.toggle('hide',k!==apage||k==='over');$('as-'+k).classList.toggle('on',k===apage)});
+  $('anav').classList.toggle('hide',apage==='set');
+  settingsCommon();
+  const y=cur.getFullYear(),m=cur.getMonth(),n=new Date(y,m+1,0).getDate(),off=(new Date(y,m,1).getDay()+6)%7,today=ymd(new Date());
+  let g='';
+  ['m','d','w','d','v','z','z'].forEach(d=>g+=`<div class="dh">${d}</div>`);
+  for(let i=0;i<off;i++)g+='<div class="day e"></div>';
+  for(let d=1;d<=n;d++){
+    const k=`${y}-${pad(m+1)}-${pad(d)}`,has=(S.plans[k]||[]).length;
+    g+=`<div class="${['day',has?'has':'',k===today?'t':'',k===vSel?'sel':''].join(' ')}" aria-label="${d} ${monthName()}${has?', '+has+' plannen':''}" onclick="vPick('${k}')"><span class="dn">${d}</span>${has?'<i class="pdot"></i>':''}</div>`;
+  }
+  $('cal').innerHTML=g;$('calkey').textContent='';
+  const pl=(S.plans[vSel]||[]).slice().sort(byTime),t=new Date(vSel+'T12:00').toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'});
+  $('vplans').innerHTML=`<h2>${t.charAt(0).toUpperCase()+t.slice(1)}</h2>`+(pl.length?pl.map(p=>planRow(vSel,p,true)).join(''):'<p class="mu" style="margin:0 0 4px">Niets gepland.</p>')+`<div class="row" style="gap:8px;margin-top:12px"><input id="pq" placeholder="Iets plannen…" style="margin:0" enterkeyhint="done" onkeydown="if(event.key==='Enter')addPlan('${vSel}','pq','pqt')"><input type="time" id="pqt" style="margin:0;flex:0 0 96px" aria-label="Tijd"><button class="p" style="flex:0 0 auto" onclick="addPlan('${vSel}','pq','pqt')">+</button></div>`;
+}
+let dDate=ymd(new Date());
+function shiftDiary(n){const d=new Date(dDate+'T12:00');d.setDate(d.getDate()+n);dDate=ymd(d);renderDagboek()}
+function setDiary(f,v){const l0=xpState().lvl;S.diary[dDate]={...(S.diary[dDate]||{t:'',e:''}),[f]:v};save();lvlCheck(l0)}
+function renderDagboek(){
+  const d=S.diary[dDate]||{t:'',e:''};
+  $('ddate').value=dDate;
+  if($('dtext')!==document.activeElement)$('dtext').value=d.t||'';
+  $('dener').innerHTML=[['laag','Laag'],['mid','Gemiddeld'],['hoog','Hoog']].map(([k,l])=>`<span class="chip${d.e===k?' on':''}" onclick="setDiary('e',S.diary[dDate]&&S.diary[dDate].e==='${k}'?'':'${k}');renderDagboek()">${l}</span>`).join('');
+  const days=Object.keys(S.diary).filter(hasDiary).sort().reverse().slice(0,30);
+  $('dlist').innerHTML=days.length?days.map(x=>`<div class="li" style="cursor:pointer" onclick="dDate='${x}';renderDagboek();scrollTo(0,0)"><span>${new Date(x+'T12:00').toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short'})}</span><span class="mu" style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:55%">${esc((S.diary[x].t||'').slice(0,40))}</span></div>`).join(''):'<p class="mu" style="margin:0">Nog niets geschreven.</p>';
+}
+setInterval(()=>{if(curTab==='vandaag'&&!document.hidden)S.space==='vrij'?renderVandaagVrij():renderVandaag()},60000);
 function quickToday(){const k=ymd(new Date()),l0=xpState().lvl;S.shifts[k]={...S.def};save();render();toast('Ingepland',()=>{delete S.shifts[k];save();render()});lvlCheck(l0)}
 function offToday(){const k=ymd(new Date()),o=S.shifts[k];delete S.shifts[k];S.off[k]='vrij';save();render();toast('Vrij gezet',()=>{if(o)S.shifts[k]=o;delete S.off[k];save();render()})}
 function questList(){
   const k=ymd(new Date());
+  if(S.space==='vrij')return [[hasDiary(k),'Dagboek geschreven',10,"tab('logboek')"]];
   return [[!!(S.shifts[k]||S.off[k]),'Dienst ingevuld',10,"tab('vandaag')"],[hasLog(k),'Logboek geschreven',20,"logDate='"+k+"';tab('logboek')"]];
 }
 function dlIcs(){
@@ -570,20 +655,24 @@ function toast(t,undo,label){
   e.onclick=undo?()=>{undo();e.classList.remove('on')}:null;e.style.cursor=undo?'pointer':'default';
   e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),undo?5000:2200);
 }
+const spNotes=()=>S.notes.filter(n=>(n.sp||'werk')===S.space);
+const labelsFor=()=>S.space==='vrij'?S.labelsV:S.labels;
 function xpState(){
   const td=ymd(new Date());
   const logs=Object.keys(S.logs).filter(d=>hasLog(d)).length,sh=Object.keys(S.shifts).filter(d=>d<=td).length;
-  const xp=logs*20+sh*10+S.notes.filter(n=>n.done).length*3,lvl=Math.floor(Math.sqrt(xp/30))+1,lo=30*(lvl-1)**2,hi=30*lvl*lvl;
+  const diary=Object.keys(S.diary).filter(d=>hasDiary(d)).length;
+  const xp=logs*20+sh*10+diary*10+S.notes.filter(n=>n.done).length*3,lvl=Math.floor(Math.sqrt(xp/30))+1,lo=30*(lvl-1)**2,hi=30*lvl*lvl;
   return {xp,lvl,lo,hi};
 }
 function lvlCheck(before){const a=xpState();if(a.lvl>before)toast('⬆ Level up! LVL '+a.lvl)}
+const hasDiary=d=>!!(S.diary[d]&&(S.diary[d].t||'').trim());
 function hasLog(d){const L=S.logs[d];return !!L&&(Object.values(L.on||{}).some(a=>a.length)||Object.values(L.x||{}).some(t=>(t||'').trim()))}
-const TITLES={vandaag:'Vandaag',agenda:'Agenda',logboek:'Logboek',hoofd:'Hoofd'};
 function renderTop(){
   const s=xpState(),w=(s.xp-s.lo)/(s.hi-s.lo)*100,c=$('lvlchip');
-  $('tbtitle').textContent=TITLES[curTab];
   c.textContent='lvl '+s.lvl;c.setAttribute('aria-label',`Voortgang: level ${s.lvl}, ${s.xp-s.lo} van ${s.hi-s.lo} xp`);
   $('xpfill').style.width=w+'%';
+  ['werk','vrij'].forEach(k=>{$('sp-'+k).classList.toggle('on',S.space===k);$('sp-'+k).setAttribute('aria-pressed',S.space===k)});
+  $('t-logboek').textContent=S.space==='vrij'?'dagboek':'logboek';
   checkAch();
 }
 function exportData(){
@@ -619,7 +708,7 @@ function readImg(file,max=720){
     c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.6))};im.src=fr.result};fr.readAsDataURL(file)});
 }
 function mkNote(t,img){
-  const n={id:Date.now(),t,done:false,star:false,label:nFilter||''};if(img)n.img=img;S.notes.push(n);save();renderHoofd();return n;
+  const n={id:Date.now(),t,done:false,star:false,sp:S.space,label:nFilter||''};if(img)n.img=img;S.notes.push(n);save();renderHoofd();return n;
 }
 function addNote(){const el=$('ni'),t=el.value.trim();if(!t)return;mkNote(t);el.value='';el.focus()}
 function notePhoto(inp){
@@ -650,10 +739,10 @@ function noteRow(n){
 }
 function renderHoofd(){
   const byDue=(a,b)=>(a.due&&b.due)?(a.due+(a.time||'')).localeCompare(b.due+(b.time||'')):a.due?-1:b.due?1:b.id-a.id;
-  const all=S.notes.filter(n=>!nFilter||n.label===nFilter);
+  const all=spNotes().filter(n=>!nFilter||n.label===nFilter);
   const open=all.filter(n=>!n.done).sort(byDue),done=all.filter(n=>n.done).sort((a,b)=>b.id-a.id);
   const foc=open.filter(n=>n.star),tod=open.filter(n=>!n.star&&['late','today'].includes(dueState(n))),rest=open.filter(n=>!n.star&&!tod.includes(n));
-  const used=[...new Set(S.notes.map(n=>n.label).filter(Boolean))];
+  const used=[...new Set(spNotes().map(n=>n.label).filter(Boolean))];
   if(nFilter&&!used.includes(nFilter))nFilter='';
   $('nfilt').classList.toggle('hide',!used.length);
   $('nfilt').innerHTML=['',...used].map(l=>`<span class="chip${nFilter===l?' on':''}" onclick="nFilter='${esc(l).replace(/'/g,"&#39;")}';renderHoofd()">${l?esc(l):'alle'}</span>`).join('');
@@ -672,11 +761,11 @@ function openNote(id){
 }
 function fillNote(){
   const cur=S.notes.find(x=>x.id===nEdit);if(cur)$('nstar').textContent=cur.star?'★ in focus voor vandaag':'☆ zet in focus voor vandaag';
-  const used=[...new Set([...S.labels,...S.notes.map(n=>n.label).filter(Boolean)])];
+  const used=[...new Set([...labelsFor(),...spNotes().map(n=>n.label).filter(Boolean)])];
   $('nlab').innerHTML=used.map((l,i)=>`<span class="chip${nTmp.label===l?' on':''}" onclick="nTmp.label=nTmp.label===used_${i}?'':used_${i};fillNote()">${esc(l)}</span>`).join('').replace(/used_(\d+)/g,(m,i)=>JSON.stringify(used[+i]).replace(/"/g,'&quot;'));
   $('nimgw').innerHTML=nTmp.img?`<img src="${nTmp.img}" alt="foto" style="max-width:100%;max-height:200px;border-radius:6px;border:1px solid var(--bd)">`:'';
 }
-function addLabel(){const v=$('nnl').value.trim().toLowerCase();if(!v)return;if(!S.labels.includes(v))S.labels.push(v);nTmp.label=v;$('nnl').value='';save();fillNote()}
+function addLabel(){const v=$('nnl').value.trim().toLowerCase();if(!v)return;const L=labelsFor();if(!L.includes(v))L.push(v);nTmp.label=v;$('nnl').value='';save();fillNote()}
 function notePhoto2(inp){const f=inp.files[0];if(!f)return;readImg(f).then(s=>{nTmp.img=s;fillNote()}).catch(()=>toast('Foto lukt niet')).finally(()=>inp.value='')}
 function closeNote(){$('nsheet').classList.remove('on');nEdit=null}
 function saveNote(){
@@ -690,7 +779,7 @@ function dlIcsNotes(){
   const z=n=>String(n).padStart(2,'0');
   const stamp=d=>`${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}T${z(d.getHours())}${z(d.getMinutes())}00`;
   let o='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//overzicht//NL\r\nCALSCALE:GREGORIAN\r\n',c=0;
-  S.notes.filter(n=>n.due&&!n.done&&n.due>=ymd(new Date())).forEach(n=>{
+  spNotes().filter(n=>n.due&&!n.done&&n.due>=ymd(new Date())).forEach(n=>{
     const [y,m,d]=n.due.split('-').map(Number),[hh,mm]=(n.time||'09:00').split(':').map(Number),st=new Date(y,m-1,d,hh,mm),en=new Date(st.getTime()+15*60000);
     const t=n.t.replace(/[\r\n,;\\]+/g,' ');
     o+=`BEGIN:VEVENT\r\nUID:note-${n.id}@overzicht\r\nDTSTAMP:${stamp(new Date())}\r\nDTSTART:${stamp(st)}\r\nDTEND:${stamp(en)}\r\nSUMMARY:${t}\r\nBEGIN:VALARM\r\nACTION:DISPLAY\r\nDESCRIPTION:${t}\r\nTRIGGER:PT0M\r\nEND:VALARM\r\nEND:VEVENT\r\n`;c++;
@@ -817,9 +906,9 @@ function dlLog(){countUse();
 }
 
 applyTheme();
-document.body.dataset.tab='vandaag';
+document.body.dataset.tab='agenda';document.body.dataset.space=S.space;
 render();
-{const q=new URLSearchParams(location.search).get('tab');if(['vandaag','agenda','logboek','hoofd'].includes(q))tab(q)}
+{const q=new URLSearchParams(location.search).get('tab');if(['vandaag','agenda','logboek','hoofd'].includes(q))tab(q);else tab('agenda')}
 if('serviceWorker' in navigator){
   const had=!!navigator.serviceWorker.controller;
   navigator.serviceWorker.register('sw.js').catch(()=>{});

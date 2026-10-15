@@ -80,6 +80,18 @@ label{font-size:13px;color:var(--mu);display:block;margin:0 0 5px}
 #dp,#sp{text-align:center}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
 .chip{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;min-height:42px;background:var(--c0);border:var(--bw) solid var(--line);border-radius:var(--rp);font-size:15px;cursor:pointer}
+.lstat{font-size:13px;color:var(--mu);margin:0 0 10px;display:flex;align-items:center;gap:8px}
+.lstat .dot{width:8px;height:8px;border-radius:50%;background:var(--ac)}
+.lh{display:flex;justify-content:space-between;align-items:center;font-weight:700;margin-bottom:10px}
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tile{position:relative;display:flex;align-items:center;justify-content:center;text-align:center;min-height:48px;padding:8px 10px;background:var(--c0);border:var(--bw) solid var(--line);border-radius:var(--rp,12px);font-size:14px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+.tile.wide{grid-column:span 2}
+.tile.on{background:var(--grad);border-color:var(--ac);color:var(--onac);font-weight:700}
+.tile.num{padding:4px;gap:4px;justify-content:space-between}
+.tile .tc{flex:1;display:flex;flex-direction:column;align-items:center;line-height:1.15;font-size:12px}
+.tile .tc b{font-size:20px}
+.tile .stp{flex:0 0 auto;width:36px;height:36px;min-height:0;padding:0;border-radius:50%;background:#0003;border:1px solid color-mix(in srgb,var(--onac) 45%,transparent);color:var(--onac);font-size:18px}
+.tile .tx{position:absolute;top:2px;right:6px;font-style:normal;color:var(--bad)}
 .chip.on{background:var(--grad);border-color:var(--ac);color:var(--onac);font-weight:700}
 .chip .st{display:inline-flex;align-items:center;gap:8px}
 .chip .st i{font-style:normal;width:24px;height:24px;line-height:22px;text-align:center;border:1px solid color-mix(in srgb,var(--onac) 45%,transparent);border-radius:50%;background:#0003}
@@ -378,10 +390,11 @@ body[data-theme=vapor] .bgfx{background:radial-gradient(480px 300px at 0 0,#ff6e
 <section id="v-logboek" class="hide">
   <div class="card">
     <div class="row" style="align-items:center;gap:6px;margin-bottom:10px"><button onclick="shiftLog(-1)" style="flex:0 0 auto" aria-label="Vorige dag">‹</button><input type="date" id="ldate" style="margin:0" onchange="logDate=this.value||logDate;render()"><button onclick="shiftLog(1)" style="flex:0 0 auto" aria-label="Volgende dag">›</button></div>
+    <div id="lstat" class="lstat"></div>
     <div class="chips" style="margin:0"><button class="sm" onclick="copyPrev()">↩ vorige keer</button><span id="lprof"></span><button class="sm" onclick="saveProf()">+ profiel</button></div>
   </div>
   <div id="lsecs"></div>
-  <details class="card"><summary>Voorbeeld</summary><pre id="lprev" style="margin:0"></pre></details>
+  <div class="card"><div class="lh"><span>Resultaat</span><button class="link" onclick="editLt=!editLt;renderLog()" id="ledit"></button></div><pre id="lprev" style="margin:0"></pre></div>
   <details class="card"><summary>Eerdere logboeken</summary>
     <div class="nav" style="margin:0 0 6px"><button onclick="mv(-1)" aria-label="Vorige maand">‹</button><b id="mlabel3"></b><button onclick="mv(1)" aria-label="Volgende maand">›</button></div>
     <div class="mu" id="lsum"></div><div id="lover"></div>
@@ -729,7 +742,7 @@ function renderVandaag(){
     main=`<h2 class="vt">Vandaag: ${OFFN[of]}</h2><p class="mu" style="margin:0">Niets te doen. Rust maar uit.</p><button class="link" onclick="openDay('${k}')">aanpassen</button>`;
   }else{
     const s=tmin(sh.s),e=tmin(sh.e)+(tmin(sh.e)<=tmin(sh.s)?1440:0);
-    if(log)main=`<h2 class="vt">Logboek is klaar ✓</h2><p class="mu" style="margin:0">Dienst ${sh.s}–${sh.e}.</p><div class="stack"><button class="p big-btn" onclick="logDate='${k}';tab('logboek')">Bekijken of kopiëren</button></div>`;
+    if(log)main=`<h2 class="vt">Logboek bijgehouden ✓</h2><p class="mu" style="margin:0">${logCount(k)} dingen ingevuld.</p><div class="stack"><button class="p big-btn" onclick="logDate='${k}';tab('logboek')">Verder invullen of kopiëren</button></div>`;
     else if(now>=e-60)main=`<h2 class="vt">Tijd voor je logboek</h2><p class="mu" style="margin:0">Je dienst eindigt om ${sh.e}.</p><div class="stack"><button class="p big-btn" onclick="logDate='${k}';tab('logboek')">Logboek schrijven</button></div>`;
     else if(now<s)main=`<h2 class="vt">Vandaag werk je</h2><div class="vbig">${sh.s}–${sh.e}</div><p class="mu" style="margin:0">Begint over ${untilTxt(s-now)}.</p>`;
     else main=`<h2 class="vt">Je werkt tot ${sh.e}</h2><p class="mu" style="margin:0">Nog ${untilTxt(e-now)}. Het logboek komt straks.</p>`;
@@ -1043,9 +1056,12 @@ function dlIcsNotes(){
 const SEC=[['pers','Personeel',0],['winkel','Winkel',1],['haccp','HACCP',1],['diefstal','Diefstal',0]]; // [key,naam,bullets?]
 const fresh=()=>({on:{pers:[],winkel:[],haccp:[],diefstal:[]},n:{},x:{}});
 const getLog=d=>{const L=S.logs[d]||fresh();L.on=L.on||{};L.n=L.n||{};L.x=L.x||{};SEC.forEach(s=>L.on[s[0]]=L.on[s[0]]||[]);return L};
-function commit(L){S.logs[logDate]=L;save()}
-function tg(k,i){const L=getLog(logDate),z=S.lt[k][i],a=L.on[k],j=a.indexOf(z);j<0?a.push(z):a.splice(j,1);commit(L);renderLog()}
-function stp(k,i,d){const L=getLog(logDate),z=S.lt[k][i];L.n[z]=Math.max(1,(L.n[z]||1)+d);commit(L);renderLog()}
+function commit(L){L.ts=Date.now();S.logs[logDate]=L;save();stat()}
+function tg(k,i){const L=getLog(logDate),z=S.lt[k][i],a=L.on[k],j=a.indexOf(z);if(j<0){a.push(z);if(z.includes('#'))L.n[z]=L.n[z]||1}else a.splice(j,1);commit(L);renderLog()}
+function stp(k,i,d){const L=getLog(logDate),z=S.lt[k][i],n=(L.n[z]||1)+d;if(n<1){const a=L.on[k],j=a.indexOf(z);if(j>=0)a.splice(j,1)}else L.n[z]=n;commit(L);renderLog()}
+function logCount(d){const L=S.logs[d];if(!L)return 0;return Object.values(L.on||{}).reduce((a,b)=>a+b.length,0)+Object.values(L.x||{}).filter(t=>(t||'').trim()).length}
+function stat(){const L=S.logs[logDate],el=$('lstat');if(!el)return;
+  el.innerHTML=hasLog(logDate)?`<span class="dot"></span>Opgeslagen · ${logCount(logDate)} ingevuld${L.ts?' · '+new Date(L.ts).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}):''}`:'Nog leeg — wat je invult wordt automatisch bewaard'}
 function setX(k,v){const L=getLog(logDate);L.x[k]=v;commit(L);updPrev()}
 function addLt(k){const el=$('nl-'+k),v=el.value.trim();if(v&&!S.lt[k].includes(v)){S.lt[k].push(v);save();renderLog()}}
 function delLt(k,i){S.lt[k].splice(i,1);save();renderLog()}
@@ -1078,32 +1094,33 @@ function logText(d){
   return t;
 }
 function updPrev(){$('lprev').textContent=logText(logDate)}
-let lopen='pers';
-function lop(k){lopen=lopen===k?'':k;renderLog()}
-function accCard(k,name,summary,body){
-  const open=lopen===k;
-  return `<div class="card acc"><button class="acc-h" onclick="lop('${k}')" aria-expanded="${open}"><span>${name}</span><span class="mu">${summary}</span><span class="chev">${open?'▾':'▸'}</span></button>${open?`<div class="acc-b">${body}</div>`:''}</div>`;
-}
+let lx={};
+function lxo(k){lx[k]=!lx[k];renderLog()}
 function secCard(k,name,L){
   const use=S.use[k]||{};
   const order=S.lt[k].map((z,i)=>[z,i]).sort((a,b)=>(use[b[0]]||0)-(use[a[0]]||0)||a[1]-b[1]);
-  const chips=order.map(([z,i])=>{
-    const on=L.on[k].includes(z),num=z.includes('#');
-    const label=esc(on&&num?z.replace('#',''):z.replace('#','…'));
-    const st=on&&num?`<span class="st"><i onclick="event.stopPropagation();stp('${k}',${i},-1)">−</i><b>${L.n[z]||1}</b><i onclick="event.stopPropagation();stp('${k}',${i},1)">+</i></span>`:'';
-    return `<span class="chip${on?' on':''}" onclick="tg('${k}',${i})">${st}${label}${editLt?`<i onclick="event.stopPropagation();delLt('${k}',${i})" style="font-style:normal;color:var(--bad)">✕</i>`:''}</span>`;
+  const tiles=order.map(([z,i])=>{
+    const on=L.on[k].includes(z),num=z.includes('#'),x=editLt?`<i class="tx" onclick="event.stopPropagation();delLt('${k}',${i})">✕</i>`:'';
+    if(num){
+      const lab=esc(z.replace('#','').trim());
+      return on?`<div class="tile num on"><button class="stp" onclick="stp('${k}',${i},-1)" aria-label="minder">−</button><div class="tc" onclick="stp('${k}',${i},1)"><b>${L.n[z]||1}</b><span>${lab}</span></div><button class="stp" onclick="stp('${k}',${i},1)" aria-label="meer">+</button>${x}</div>`
+        :`<div class="tile num" onclick="tg('${k}',${i})"><div class="tc"><b>+</b><span>${lab}</span></div>${x}</div>`;
+    }
+    return `<div class="tile tog${on?' on':''}${z.length>22?' wide':''}" onclick="tg('${k}',${i})">${esc(z)}${x}</div>`;
   }).join('');
-  const add=editLt?`<div class="row" style="margin-bottom:10px"><input id="nl-${k}" placeholder="Nieuwe zin (# = aantal)" style="margin:0"><button onclick="addLt('${k}')" style="flex:0 0 auto">+</button></div>`:'';
-  const n=L.on[k].length+((L.x[k]||'').trim()?1:0);
-  const body=`<div class="chips">${chips}</div>${add}<textarea placeholder="Extra…" oninput="setX('${k}',this.value)" style="margin:0 0 4px">${esc(L.x[k]||'')}</textarea><button class="link" onclick="editLt=!editLt;renderLog()">${editLt?'klaar met aanpassen':'zinnen aanpassen'}</button>`;
-  return accCard(k,name,n?n+' gekozen':'leeg',body);
+  const add=editLt?`<div class="row" style="margin-top:8px"><input id="nl-${k}" placeholder="Nieuwe tegel (# = aantal)" style="margin:0"><button onclick="addLt('${k}')" style="flex:0 0 auto">+</button></div>`:'';
+  const hasX=(L.x[k]||'').trim(),xo=lx[k]||hasX;
+  const ex=xo?`<textarea placeholder="Extra…" oninput="setX('${k}',this.value)" rows="2" style="margin:8px 0 0">${esc(L.x[k]||'')}</textarea>`:`<button class="link" onclick="lxo('${k}')">+ extra</button>`;
+  const n=L.on[k].length+(hasX?1:0);
+  return `<div class="card lsec"><div class="lh"><span>${name}</span><span class="mu">${n||''}</span></div><div class="tgrid">${tiles}</div>${add}${ex}</div>`;
 }
 function renderLog(){
   const L=getLog(logDate);
   $('ldate').value=logDate;$('lstore').value=S.store;
   $('lprof').innerHTML=S.profiles.map((p,i)=>`<span class="chip" onclick="applyProf(${i})">${esc(p.name)}${editLt?`<i onclick="event.stopPropagation();delProf(${i})" style="font-style:normal;color:var(--bad)">✕</i>`:''}</span>`).join('');
-  $('lsecs').innerHTML=SEC.map(([k,name])=>secCard(k,name,L)).join('')+accCard('over','Overige',(L.x.over||'').trim()?'ingevuld':'leeg',`<textarea oninput="setX('over',this.value)" style="margin:0">${esc(L.x.over||'')}</textarea>`);
-  updPrev();
+  $('lsecs').innerHTML=SEC.map(([k,name])=>secCard(k,name,L)).join('')+`<div class="card lsec"><div class="lh"><span>Overige</span></div><textarea placeholder="Overige opmerkingen…" oninput="setX('over',this.value)" rows="2" style="margin:0">${esc(L.x.over||'')}</textarea></div>`;
+  $('ledit').textContent=editLt?'klaar met aanpassen':'tegels aanpassen';
+  stat();updPrev();
   const mk=monthKey(),days=Object.keys(S.logs).filter(d=>d.startsWith(mk)&&hasLog(d)).sort().reverse();
   $('lsum').textContent=`${days.length} ${days.length===1?'logboek':'logboeken'} in ${monthName()}`;
   $('lover').innerHTML=days.map(d=>`<div class="li" style="cursor:pointer" onclick="logDate='${d}';render();scrollTo(0,0)"><span>${new Date(d+'T12:00').toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short'})}</span><span class="mu">openen</span></div>`).join('');

@@ -494,7 +494,7 @@ const monthName=()=>cur.toLocaleDateString('nl-NL',{month:'long',year:'numeric'}
 
 function mv(n){cur.setMonth(cur.getMonth()+n);enter();render()}
 const secOf=t=>t==='logboek'&&S.space==='vrij'?'dagboek':t;
-function tab(t){enter();curTab=t;document.body.dataset.tab=t;['vandaag','agenda','logboek','dagboek','hoofd'].forEach(x=>$('v-'+x).classList.toggle('hide',x!==secOf(t)));['vandaag','agenda','logboek','hoofd'].forEach(x=>{$('t-'+x).classList.toggle('on',x===t);$('t-'+x).setAttribute('aria-current',x===t?'page':'false')});render();scrollTo(0,0)}
+function tab(t){enter();if(t==='agenda'){apage='cal';cur=new Date();cur.setDate(1)}curTab=t;document.body.dataset.tab=t;['vandaag','agenda','logboek','dagboek','hoofd'].forEach(x=>$('v-'+x).classList.toggle('hide',x!==secOf(t)));['vandaag','agenda','logboek','hoofd'].forEach(x=>{$('t-'+x).classList.toggle('on',x===t);$('t-'+x).setAttribute('aria-current',x===t?'page':'false')});render();scrollTo(0,0)}
 function setSpace(sp){if(S.space===sp)return;S.space=sp;save();document.body.dataset.space=sp;nFilter='';apage='cal';tab(curTab)}
 
 function render(){

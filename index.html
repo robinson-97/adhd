@@ -14,7 +14,7 @@
 <meta name="description" content="Werkagenda, logboek en hoofd leegmaken">
 <title>Overzicht</title>
 <style>
-:root{--bg:#15171c;--card:#1d2027;--raise:#262a33;--bd:#2f343e;--bd2:#272b34;--tx:#e6e8ec;--mu:#9aa1ae;--dim:#6f7684;--ac:#8fb4e8;--hi:#b4cdf0;--sel:#26344a;--ok:#86b99a;--okbg:#4f7cac;--bad:#e08a8f;--warn:#d9b26a;--ink:#101216;--on:#fff;--bbd:#343a46;--hover:#2d323c;--pbd:#5a88b8;--pho:#5a88b8;--dangerbd:#e08a8f55;--ring:#8fb4e855;--acline:#8fb4e866;--selbd:#6f9ad0;--okfill:#26344a;--okline:#4f6f99;--oktx:#b4cdf0;--vakbg:#2e2a45;--vaktx:#c3b9f0;--zbg:#3b2a2e;--zbd:#8a5a60;--ztx:#f0b2b6;--toasttx:#d9e6f7;--overlay:#0b0c10b3;--shadow:#0006;color-scheme:dark;--sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+:root{--bg:#15171c;--card:#1d2027;--raise:#262a33;--bd:#2f343e;--bd2:#272b34;--tx:#e6e8ec;--mu:#9aa1ae;--dim:#6f7684;--ac:#8fb4e8;--hi:#b4cdf0;--sel:#26344a;--ok:#86b99a;--okbg:#4f7cac;--bad:#e08a8f;--warn:#d9b26a;--ink:#101216;--on:#fff;--bbd:#343a46;--hover:#2d323c;--pbd:#5a88b8;--pho:#5a88b8;--dangerbd:#e08a8f55;--ring:#8fb4e855;--acline:#8fb4e866;--selbd:#6f9ad0;--okfill:#26344a;--okline:#4f6f99;--oktx:#b4cdf0;--vakbg:#2e2a45;--vaktx:#c3b9f0;--zbg:#3b2a2e;--zbd:#8a5a60;--ztx:#f0b2b6;--toasttx:#d9e6f7;--overlay:#0b0c10b3;--shadow:#0006;--c-w:#3f6fae;--c-wt:#fff;--c-p:#26364d;--c-pt:#a9c6ee;--c-v:#3b404b;--c-vt:#b6bcc8;--c-vak:#6d58b3;--c-vakt:#fff;--c-z:#b45a64;--c-zt:#fff;--today:#f2c14e;color-scheme:dark;--sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 var(--sans);padding-bottom:92px}
 main{max-width:560px;margin:0 auto;padding:12px 16px}
@@ -90,17 +90,10 @@ pre{white-space:pre-wrap;background:var(--bg);border:1px solid var(--bd);border-
 :focus-visible{outline:2px solid var(--ac);outline-offset:2px}
 .cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;align-items:stretch}
 .cal .dh{display:flex;align-items:center;justify-content:center;padding:0 0 4px;font-size:13px;color:var(--dim)}
-.day{aspect-ratio:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--raise);border:2px solid transparent;border-radius:12px;cursor:pointer;position:relative;font-size:16px;color:var(--mu);overflow:hidden}
+.day{aspect-ratio:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--raise);border:0;border-radius:12px;cursor:pointer;position:relative;font-size:16px;color:var(--mu);overflow:hidden}
 .day.e{background:none;cursor:default}
 .day .dn{line-height:1}
 .day .hr{position:absolute;bottom:3px;font-size:10px;line-height:1;opacity:.9}
-.day.w{background:var(--okfill);color:var(--oktx);font-weight:600}
-.day.plan{background:transparent;border:2px dashed var(--okline);color:var(--oktx)}
-.day.past:not(.w){opacity:.55}
-.day.t{border:2px solid var(--ac);color:var(--tx);font-weight:700}
-.day.o-vrij{background:transparent;border:2px solid var(--bd);color:var(--dim)}
-.day.o-vak{background:var(--vakbg);color:var(--vaktx)}
-.day.o-ziek{background:var(--zbg);color:var(--ztx)}
 .wr{display:grid;grid-template-columns:84px 1fr 60px;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--bd2);font-size:15px}
 .wr .bar{margin:0}
 .wr .wh{text-align:right;font-weight:600}
@@ -152,8 +145,8 @@ html{overscroll-behavior-y:none}
 body{overscroll-behavior-y:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
 input,textarea,pre,.nt,#lprev{-webkit-user-select:text;user-select:text}
 @media(display-mode:standalone){main{padding-top:calc(12px + env(safe-area-inset-top))}}
-:root[data-theme=light]{--bg:#f6f6f4;--card:#ffffff;--raise:#efefec;--bd:#e0e0da;--bd2:#ececE7;--tx:#25272c;--mu:#666b75;--dim:#9a9fa8;--ac:#3e6fb0;--hi:#2d578f;--sel:#e3edf9;--ok:#3f7a58;--okbg:#4a78ad;--bad:#b5474e;--warn:#99702a;--ink:#ffffff;--on:#ffffff;--bbd:#d9d9d2;--hover:#e8e8e4;--pbd:#4a78ad;--pho:#3f6aa0;--dangerbd:#b5474e55;--ring:#3e6fb033;--acline:#9fbbdf;--selbd:#3e6fb0;--okfill:#e3edf9;--okline:#9fbbdf;--oktx:#2d578f;--vakbg:#ece8f9;--vaktx:#5a4aa6;--zbg:#f9e8ea;--zbd:#d99ca1;--ztx:#9c3a42;--toasttx:#2d578f;--overlay:#1f232880;--shadow:#1f232822;color-scheme:light}
-@media(prefers-color-scheme:light){:root:not([data-theme=dark]){--bg:#f6f6f4;--card:#ffffff;--raise:#efefec;--bd:#e0e0da;--bd2:#ececE7;--tx:#25272c;--mu:#666b75;--dim:#9a9fa8;--ac:#3e6fb0;--hi:#2d578f;--sel:#e3edf9;--ok:#3f7a58;--okbg:#4a78ad;--bad:#b5474e;--warn:#99702a;--ink:#ffffff;--on:#ffffff;--bbd:#d9d9d2;--hover:#e8e8e4;--pbd:#4a78ad;--pho:#3f6aa0;--dangerbd:#b5474e55;--ring:#3e6fb033;--acline:#9fbbdf;--selbd:#3e6fb0;--okfill:#e3edf9;--okline:#9fbbdf;--oktx:#2d578f;--vakbg:#ece8f9;--vaktx:#5a4aa6;--zbg:#f9e8ea;--zbd:#d99ca1;--ztx:#9c3a42;--toasttx:#2d578f;--overlay:#1f232880;--shadow:#1f232822;color-scheme:light}}
+:root[data-theme=light]{--bg:#f6f6f4;--card:#ffffff;--raise:#efefec;--bd:#e0e0da;--bd2:#ececE7;--tx:#25272c;--mu:#666b75;--dim:#9a9fa8;--ac:#3e6fb0;--hi:#2d578f;--sel:#e3edf9;--ok:#3f7a58;--okbg:#4a78ad;--bad:#b5474e;--warn:#99702a;--ink:#ffffff;--on:#ffffff;--bbd:#d9d9d2;--hover:#e8e8e4;--pbd:#4a78ad;--pho:#3f6aa0;--dangerbd:#b5474e55;--ring:#3e6fb033;--acline:#9fbbdf;--selbd:#3e6fb0;--okfill:#e3edf9;--okline:#9fbbdf;--oktx:#2d578f;--vakbg:#ece8f9;--vaktx:#5a4aa6;--zbg:#f9e8ea;--zbd:#d99ca1;--ztx:#9c3a42;--toasttx:#2d578f;--overlay:#1f232880;--shadow:#1f232822;--c-w:#4a78ad;--c-wt:#fff;--c-p:#dbe8f7;--c-pt:#2d578f;--c-v:#e1e1dc;--c-vt:#5f646d;--c-vak:#7d6cc0;--c-vakt:#fff;--c-z:#c4606a;--c-zt:#fff;--today:#d99a1f;color-scheme:light}
+@media(prefers-color-scheme:light){:root:not([data-theme=dark]){--bg:#f6f6f4;--card:#ffffff;--raise:#efefec;--bd:#e0e0da;--bd2:#ececE7;--tx:#25272c;--mu:#666b75;--dim:#9a9fa8;--ac:#3e6fb0;--hi:#2d578f;--sel:#e3edf9;--ok:#3f7a58;--okbg:#4a78ad;--bad:#b5474e;--warn:#99702a;--ink:#ffffff;--on:#ffffff;--bbd:#d9d9d2;--hover:#e8e8e4;--pbd:#4a78ad;--pho:#3f6aa0;--dangerbd:#b5474e55;--ring:#3e6fb033;--acline:#9fbbdf;--selbd:#3e6fb0;--okfill:#e3edf9;--okline:#9fbbdf;--oktx:#2d578f;--vakbg:#ece8f9;--vaktx:#5a4aa6;--zbg:#f9e8ea;--zbd:#d99ca1;--ztx:#9c3a42;--toasttx:#2d578f;--overlay:#1f232880;--shadow:#1f232822;--c-w:#4a78ad;--c-wt:#fff;--c-p:#dbe8f7;--c-pt:#2d578f;--c-v:#e1e1dc;--c-vt:#5f646d;--c-vak:#7d6cc0;--c-vakt:#fff;--c-z:#c4606a;--c-zt:#fff;--today:#d99a1f;color-scheme:light}}
 .spaces{display:inline-flex;gap:2px;padding:3px;background:var(--raise);border-radius:999px;border:1px solid var(--bd)}
 .spaces button{border:0;border-radius:999px;background:none;color:var(--mu);padding:7px 14px;font-size:14px;font-weight:500}
 .spaces button.on{background:var(--okbg);color:#fff}
@@ -162,12 +155,26 @@ body[data-space=werk] .vrij-only{display:none!important}
 body[data-space=vrij]{--ac:#8fcfb0;--hi:#b8e6d0;--sel:#24403a;--okbg:#4c8f78;--pbd:#5aa08a;--pho:#5aa08a;--okfill:#24403a;--okline:#4d8f78;--oktx:#b8e6d0;--acline:#8fcfb066;--selbd:#5aa08a;--ring:#8fcfb055;--toasttx:#d8f3e6}
 :root[data-theme=light] body[data-space=vrij]{--ac:#2f8a6a;--hi:#1f6a50;--sel:#e0f3ea;--okbg:#3f8f72;--pbd:#3f8f72;--pho:#357d63;--okfill:#e0f3ea;--okline:#9bd1b9;--oktx:#1f6a50;--acline:#9bd1b9;--selbd:#2f8a6a;--ring:#2f8a6a33;--toasttx:#1f6a50}
 @media(prefers-color-scheme:light){:root:not([data-theme=dark]) body[data-space=vrij]{--ac:#2f8a6a;--hi:#1f6a50;--sel:#e0f3ea;--okbg:#3f8f72;--pbd:#3f8f72;--pho:#357d63;--okfill:#e0f3ea;--okline:#9bd1b9;--oktx:#1f6a50;--acline:#9bd1b9;--selbd:#2f8a6a;--ring:#2f8a6a33;--toasttx:#1f6a50}}
-.day.has{background:var(--okfill);color:var(--oktx);font-weight:600}
-.day.sel:not(.t){border:2px solid var(--okline)}
-.day .pdot{position:absolute;bottom:5px;width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.7}
 .plan-time{font-weight:600;color:var(--ac);margin-right:6px}
 .chkrow{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--tx);margin:8px 0 0}
 .chkrow input{width:20px;height:20px;margin:0;flex:none;accent-color:var(--ac)}
+
+.day.w{background:var(--c-w);color:var(--c-wt);font-weight:600}
+.day.plan{background:var(--c-p);color:var(--c-pt);font-weight:600}
+.day.o-vrij{background:var(--c-v);color:var(--c-vt)}
+.day.o-vak{background:var(--c-vak);color:var(--c-vakt);font-weight:600}
+.day.o-ziek{background:var(--c-z);color:var(--c-zt);font-weight:600}
+.day.past:not(.w){opacity:.6}
+.day.t{font-weight:800;opacity:1}
+.day.t::after{content:"";position:absolute;bottom:4px;width:7px;height:7px;border-radius:50%;background:var(--today)}
+.day.has{background:var(--c-p);color:var(--c-pt);font-weight:600}
+.day.sel{background:var(--okbg);color:#fff;font-weight:700}
+.day .pdot{position:absolute;bottom:4px;width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.8}
+.legend{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:16px;font-size:13px;color:var(--mu);align-items:center;justify-content:center}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.lg{display:inline-block;width:14px;height:14px;border-radius:4px}
+.lg.w{background:var(--c-w)}.lg.plan{background:var(--c-p)}.lg.v{background:var(--c-v)}.lg.vak{background:var(--c-vak)}.lg.z{background:var(--c-z)}
+.lg.t{width:9px;height:9px;border-radius:50%;background:var(--today)}
 </style>
 </head>
 <body>
@@ -185,7 +192,9 @@ body[data-space=vrij]{--ac:#8fcfb0;--hi:#b8e6d0;--sel:#24403a;--okbg:#4c8f78;--p
   <div id="a-cal">
     <div class="card">
       <div class="cal" id="cal"></div>
-      <p class="mu" id="calkey" style="text-align:center;margin:14px 0 0"></p>
+      <div class="legend werk-only"><span><i class="lg w"></i>gewerkt</span><span><i class="lg plan"></i>gepland</span><span><i class="lg v"></i>vrij</span><span><i class="lg vak"></i>vakantie</span><span><i class="lg z"></i>ziek</span><span><i class="lg t"></i>vandaag</span></div>
+      <div class="legend vrij-only"><span><i class="lg plan"></i>plannen</span><span><i class="lg" style="background:var(--okbg)"></i>gekozen</span><span><i class="lg t"></i>vandaag</span></div>
+      <p class="mu" id="calkey" style="text-align:center;margin:10px 0 0"></p>
     </div>
     <div class="card vrij-only" id="vplans"></div>
   </div>
@@ -464,7 +473,7 @@ function renderAgenda(){
     h+=`<div class="${cls}" aria-label="${d} ${monthName()}${sh?', '+fmtH(hh)+(k<=today?' gewerkt':' gepland'):of?', '+OFFN[of]:''}" onclick="dayTap('${k}')"><span class="dn">${d}</span></div>`;
   }
   $('cal').innerHTML=h;
-  $('calkey').textContent=[oc.vak&&'paars = vakantie',oc.ziek&&'rood = ziek',oc.vrij&&'rand = vrij'].filter(Boolean).join(' · ')||'tik op een dag om te plannen';
+  $('calkey').textContent='tik op een lege dag = inplannen · tik op een gekleurde dag = aanpassen';
   const mn=cur.toLocaleDateString('nl-NL',{month:'long'});
   $('mname').textContent='gewerkt';
   $('total').textContent=fmtH(tot);

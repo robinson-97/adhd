@@ -212,8 +212,9 @@ details.card>pre{margin:0}
     <div class="card"><h2>Overzicht</h2>
       <div class="li" style="border:0;padding:0 0 10px;align-items:flex-end">
         <div><div class="mu" id="mname"></div><div class="big" id="total">0u</div></div>
-        <div style="text-align:right"><div id="dayscount" class="mu"></div><div id="wagetxt" class="mu"></div></div>
+        <div style="text-align:right"><div id="dayscount" class="mu"></div></div>
       </div>
+      <div id="paybox"></div>
       <div id="offcount" class="mu" style="padding-bottom:8px"></div>
       <div id="weeks"></div>
       <h2 style="margin:16px 0 8px">Laatste 6 maanden</h2><div id="hchart"></div>
@@ -223,7 +224,13 @@ details.card>pre{margin:0}
   <div id="a-set" class="hide">
     <div class="card"><h2>Standaard dienst</h2>
       <div class="row"><div><label for="ds">Start</label><input type="time" id="ds" onchange="saveDef()"></div><div><label for="de">Einde</label><input type="time" id="de" onchange="saveDef()"></div><div><label for="dp">Pauze min</label><input type="number" id="dp" min="0" onchange="saveDef()"></div></div>
-      <label for="dw">Uurloon bruto (€, optioneel)</label><input id="dw" type="text" inputmode="decimal" placeholder="bijv. 14,50" onchange="saveDef()" style="margin:0">
+    </div>
+    <div class="card"><h2>Loon (cao VGL)</h2>
+      <div class="row"><div><label for="ps">Schaal</label><select id="ps" onchange="savePay()"></select></div><div><label for="pt">Trede</label><select id="pt" onchange="savePay()"></select></div></div>
+      <div class="row"><div><label for="pu">Uren/week</label><input id="pu" type="number" min="0" step="0.5" onchange="savePay()"></div><div><label for="pf">Voltijd uren</label><input id="pf" type="number" min="1" step="0.5" onchange="savePay()"></div><div><label for="pn">Netto %</label><input id="pn" type="text" inputmode="decimal" onchange="savePay()"></div></div>
+      <div class="row"><div><label for="pa">Avond/nacht %</label><input id="pa" type="number" min="0" onchange="savePay()"></div><div><label for="pz">Zondag %</label><input id="pz" type="number" min="0" onchange="savePay()"></div><div><label for="pfe">Feestdag %</label><input id="pfe" type="number" min="0" onchange="savePay()"></div></div>
+      <div class="mu" id="pinfo"></div>
+      <div class="mu" style="margin-top:6px">Avond/nacht = 22:00–06:00 ma–za. Tabel: cao VGL per 1 juli 2026. Percentages en netto% zijn aannames, controleer ze met je loonstrook.</div>
     </div>
     <div class="card"><h2>Thema</h2>
       <div class="seg" style="margin:0"><button id="th-auto" onclick="setTheme('auto')">auto</button><button id="th-licht" onclick="setTheme('licht')">licht</button><button id="th-donker" onclick="setTheme('donker')">donker</button></div>
@@ -346,6 +353,7 @@ S.cats=S.cats||Object.values(OLDCATS);
 })();
 S.exp=S.exp||[];
 S.wage=S.wage||0;
+S.pay=S.pay||{schaal:'D',trede:'21/2',uren:32,full:40,pAv:50,pZo:50,pFe:100,net:90.7};
 S.budget=S.budget||{};            // categorie -> maandbudget
 S.rec=S.rec||[];                  // {id,a,c,n,day,start:'YYYY-MM'}
 S.recDone=S.recDone||[];
@@ -462,15 +470,77 @@ function renderAgenda(){
   $('mname').textContent='gewerkt';
   $('total').textContent=fmtH(tot);
   $('dayscount').textContent=`${cnt} ${cnt===1?'dag':'dagen'}`;
-  $('ds').value=S.def.s;$('de').value=S.def.e;$('dp').value=S.def.p;$('dw').value=S.wage||'';
-  $('wagetxt').textContent=S.wage?`≈ ${eur(tot*S.wage)} bruto`:'';
+  $('ds').value=S.def.s;$('de').value=S.def.e;$('dp').value=S.def.p;fillPay();
+  renderPay();
   $('offcount').textContent=[oc.vrij&&oc.vrij+' vrij',oc.vak&&oc.vak+' vakantie',oc.ziek&&oc.ziek+' ziek'].filter(Boolean).join(' · ');
   $('hchart').innerHTML=barChart(lastMonths(6).map(m=>({l:m.l,hi:m.hi,v:Object.keys(S.shifts).filter(d=>d.startsWith(m.k)).reduce((s,d)=>s+hours(S.shifts[d]),0)})),v=>Math.round(v)+'u');
   const mon=cur.toLocaleDateString('nl-NL',{month:'short'}).replace('.','');
   $('weeks').innerHTML=wk.map(w=>`<div class="wr${w.now?' now':''}"><div><b>wk ${isoWeek(new Date(y,m,w.first))}</b><div class="mu">${w.first}${w.last>w.first?'–'+w.last:''} ${mon}</div></div><div class="bar"><i style="width:${Math.min(100,w.h/40*100)}%"></i></div><b class="wh">${w.h?fmtH(w.h):'–'}</b></div>`).join('');
   renderToday();
 }
-function saveDef(){S.def={s:$('ds').value||'14:30',e:$('de').value||'23:00',p:+$('dp').value||0};S.wage=parseFloat(($('dw').value||'').replace(',','.'))||0;save();renderAgenda()}
+/* ---------- Loon ---------- */
+const CAO={ // cao VGL per 1 juli 2026, bruto per maand bij voltijd
+ A:{'21':2608.26,'21/1':2608.26},
+ B:{'21':2608.26,'21/1':2697.00,'21/2':2735.28,'21/3':2773.56,'21/4':2811.84,'21/5':2888.40},
+ C:{'21':2608.26,'21/1':2824.02,'21/2':2871.00,'21/3':2919.72,'21/4':2966.70,'21/5':3060.66},
+ D:{'21':2691.78,'21/1':2951.04,'21/2':3006.72,'21/3':3064.14,'21/4':3121.56,'21/5':3234.66},
+ E:{'21':2998.02,'21/1':3118.08,'21/2':3187.68,'21/3':3255.54,'21/4':3323.40,'21/5':3460.86},
+ F:{'21':3464.34,'21/5':3843.66},G:{'21':3974.16,'21/5':4409.16},H:{'21':4557.06,'21/5':5058.18},I:{'21':5228.70,'21/5':5801.16}};
+const tLabel=t=>t==='21'?'start':'trede '+t.split('/')[1];
+function fillPay(){
+  const P=S.pay;
+  $('ps').innerHTML=Object.keys(CAO).map(k=>`<option${k===P.schaal?' selected':''}>${k}</option>`).join('');
+  const ts=Object.keys(CAO[P.schaal]||CAO.D);if(!ts.includes(P.trede))P.trede=ts[ts.length-1];
+  $('pt').innerHTML=ts.map(t=>`<option value="${t}"${t===P.trede?' selected':''}>${tLabel(t)}</option>`).join('');
+  $('pu').value=P.uren;$('pf').value=P.full;$('pn').value=String(P.net).replace('.',',');$('pa').value=P.pAv;$('pz').value=P.pZo;$('pfe').value=P.pFe;
+  const b=payBase();$('pinfo').textContent=b.base?`${P.schaal} ${tLabel(P.trede)}: ${eur(b.base)} voltijd · jouw salaris ${eur(b.maand)}/maand · toeslaggrondslag ${eur(b.uur)}/uur`:'';
+}
+function savePay(){
+  const P=S.pay,num=id=>parseFloat(String($(id).value).replace(',','.'));
+  const ns=$('ps').value;if(ns!==P.schaal){P.schaal=ns;const ts=Object.keys(CAO[ns]);P.trede=ts.includes(P.trede)?P.trede:ts[ts.length-1]}else P.trede=$('pt').value||P.trede;
+  P.uren=num('pu')||0;P.full=num('pf')||40;P.net=num('pn')||90.7;P.pAv=num('pa')||0;P.pZo=num('pz')||0;P.pFe=num('pfe')||0;
+  save();fillPay();renderPay();
+}
+function payBase(){
+  const P=S.pay,base=(CAO[P.schaal]||{})[P.trede]||0,full=P.full||40;
+  return {base,maand:base*(P.uren/full),uur:Math.round(base*12/(52*full)*100)/100};
+}
+const holCache={};
+function holidays(y){
+  if(holCache[y])return holCache[y];
+  const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),hh=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-hh-k)%7,m=Math.floor((a+11*hh+22*l)/451),mo=Math.floor((hh+l-7*m+114)/31),da=((hh+l-7*m+114)%31)+1;
+  const easter=new Date(y,mo-1,da),add=n=>ymd(new Date(y,mo-1,da+n)),kd=new Date(y,3,27);if(kd.getDay()===0)kd.setDate(26);
+  return holCache[y]=new Set([`${y}-01-01`,add(0),add(1),ymd(kd),add(39),add(49),add(50),`${y}-12-25`,`${y}-12-26`]);
+}
+function toeslagFor(d,sh){
+  const P=S.pay,[y,m,dd]=d.split('-').map(Number),[sH,sM]=sh.s.split(':').map(Number),[eH,eM]=sh.e.split(':').map(Number);
+  const st=sH*60+sM;let en=eH*60+eM;if(en<=st)en+=1440;
+  const bucket={};let free=0;
+  for(let t=st;t<en;t++){
+    const day=new Date(y,m-1,dd+Math.floor(t/1440)),mod=t%1440,iso=ymd(day);
+    const r=holidays(day.getFullYear()).has(iso)?P.pFe:day.getDay()===0?P.pZo:(mod>=1320||mod<360)?P.pAv:0;
+    if(r>0)bucket[r]=(bucket[r]||0)+1;else free++;
+  }
+  let pause=sh.p||0; // pauze eerst uit de uren zonder toeslag halen
+  const take=Math.min(free,pause);pause-=take;
+  const rates=Object.keys(bucket).map(Number).sort((a,b)=>a-b);
+  rates.forEach(r=>{if(pause>0){const x=Math.min(bucket[r],pause);bucket[r]-=x;pause-=x}});
+  let pctHours=0,hrs=0;rates.forEach(r=>{pctHours+=bucket[r]/60*r/100;hrs+=bucket[r]/60});
+  return {pctHours,hrs};
+}
+function payFor(mk){
+  const b=payBase();let ph=0,th=0;
+  Object.keys(S.shifts).filter(d=>d.startsWith(mk)).forEach(d=>{const t=toeslagFor(d,S.shifts[d]);ph+=t.pctHours;th+=t.hrs});
+  const toeslag=ph*b.uur,bruto=b.maand+toeslag;
+  return {maand:b.maand,toeslag,th,bruto,netto:bruto*(S.pay.net/100),vak:b.maand*0.08};
+}
+function renderPay(){
+  const r=payFor(monthKey()),el=$('paybox');
+  if(!r.maand){el.innerHTML='';return}
+  const row=(a,b,c)=>`<div class="li" style="padding:5px 0;border:0"><span class="mu">${a}</span><span${c?` style="font-weight:700"`:''}>${b}</span></div>`;
+  el.innerHTML=`<div style="border-top:1px solid var(--bd2);padding-top:8px;margin-bottom:6px">${row('salaris',eur(r.maand))}${row('toeslag · '+(Math.round(r.th*10)/10)+'u',eur(r.toeslag))}${row('bruto',eur(r.bruto),1)}${row('netto ≈',eur(r.netto),1)}<div class="mu" style="font-size:11px">indicatie op basis van je kalender · excl. meeruren en vakantiegeld (${eur(r.vak)} opbouw)</div></div>`;
+}
+function saveDef(){S.def={s:$('ds').value||'14:30',e:$('de').value||'23:00',p:+$('dp').value||0};save();renderAgenda()}
 function quickToday(){const l0=xpState().lvl;S.shifts[ymd(new Date())]={...S.def};save();render();toast('+10 XP');lvlCheck(l0)}
 function offToday(){const k=ymd(new Date()),o=S.shifts[k];delete S.shifts[k];S.off[k]='vrij';save();render();toast('Vrij gezet',()=>{S.shifts[k]=o;delete S.off[k];save();render()})}
 function questList(){

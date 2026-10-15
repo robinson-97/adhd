@@ -233,7 +233,7 @@ input,textarea,pre,.nt,#lprev{-webkit-user-select:text;user-select:text}
   </div>
 
   <div id="a-set" class="hide">
-    <div class="card" id="appcard"><h2>App</h2><div class="mu" id="apptxt" style="margin-bottom:8px"></div><button class="p hide" id="appbtn" style="width:100%" onclick="installApp()">Installeer app</button></div>
+    <div class="card" id="appcard"><h2>App</h2><div class="mu" id="apptxt" style="margin-bottom:8px"></div><div class="mu" id="appver" style="margin-bottom:8px"></div><button class="sm" style="margin-bottom:8px" onclick="location.reload()">nu verversen</button><button class="p hide" id="appbtn" style="width:100%" onclick="installApp()">Installeer app</button></div>
     <div class="card"><h2>Standaard dienst</h2>
       <div class="row"><div><label for="ds">Start</label><input type="time" id="ds" onchange="saveDef()"></div><div><label for="de">Einde</label><input type="time" id="de" onchange="saveDef()"></div><div><label for="dp">Pauze min</label><input type="number" id="dp" min="0" onchange="saveDef()"></div></div>
     </div>
@@ -421,6 +421,7 @@ window.addEventListener('appinstalled',()=>{deferredInstall=null;toast('App geï
 function installApp(){if(!deferredInstall)return;deferredInstall.prompt();deferredInstall.userChoice.finally(()=>{deferredInstall=null;renderApp()})}
 function renderApp(){
   const t=$('apptxt'),b=$('appbtn');if(!t)return;
+  try{caches.keys().then(k=>{const v=k.filter(x=>x.startsWith('adhd-v')).sort().pop();$('appver').textContent=v?'versie '+v.slice(6):''})}catch(e){}
   b.classList.toggle('hide',!deferredInstall||isStandalone());
   t.textContent=isStandalone()?'✓ Je gebruikt de geïnstalleerde app.':deferredInstall?'Zet Overzicht als app op je beginscherm: eigen icoon, volledig scherm en werkt ook offline.':/iphone|ipad/i.test(navigator.userAgent)?'iPhone/iPad: tik op Deel (vierkantje met pijl) → "Zet op beginscherm".':'Open het menu van je browser (⋮) en kies "App installeren" of "Toevoegen aan startscherm".';
 }

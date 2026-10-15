@@ -112,6 +112,16 @@ details h3:first-of-type{margin-top:0}
 .acc-h .chev{color:var(--dim);font-size:13px}
 .acc-b{padding:0 16px 16px}
 details.card>pre{margin:0}
+details.set>summary{font-size:17px}
+details.set>summary .mu{margin-left:auto;margin-right:10px;font-weight:400;font-size:13px;max-width:55%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+details.set>summary::after{margin-left:0}
+details.sub{border-top:1px solid var(--line2)}
+details.sub>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;padding:13px 0;font-weight:600;color:var(--hd)}
+details.sub>summary::-webkit-details-marker{display:none}
+details.sub>summary .mu{margin-left:auto;font-weight:400;font-size:13px}
+details.sub>summary::after{content:"▸";color:var(--mu)}
+details.sub[open]>summary::after{content:"▾"}
+details.sub .chips{padding-bottom:12px}
 .bc{display:flex;gap:10px;height:140px;align-items:stretch}
 .bcc{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}
 .bcb{flex:1;width:100%;background:var(--c0);border-radius:6px;display:flex;align-items:flex-end;overflow:hidden}
@@ -306,20 +316,20 @@ body[data-theme=vapor] .bgfx{background:radial-gradient(480px 300px at 0 0,#ff6e
   </div>
 
   <div id="a-set" class="hide">
-    <div class="card" id="appcard"><h2>App</h2><div class="mu" id="apptxt" style="margin-bottom:8px"></div><div class="mu" id="appver" style="margin-bottom:8px"></div><button class="sm" style="margin-bottom:8px" onclick="location.reload()">nu verversen</button><button class="p hide" id="appbtn" style="width:100%" onclick="installApp()">Installeer app</button></div>
-    <div class="card" id="uicard"><h2>Uiterlijk</h2><div id="uirows"></div></div>
-    <div class="card werk-only"><h2>Standaard dienst</h2>
+    <details class="card set" id="appcard"><summary>App<span class="mu" id="h-app"></span></summary><div class="mu" id="apptxt" style="margin-bottom:8px"></div><div class="mu" id="appver" style="margin-bottom:8px"></div><button class="sm" style="margin-bottom:8px" onclick="location.reload()">nu verversen</button><button class="p hide" id="appbtn" style="width:100%" onclick="installApp()">Installeer app</button></details>
+    <details class="card set" id="uicard"><summary>Uiterlijk<span class="mu" id="h-ui"></span></summary><div id="uirows"></div></details>
+    <details class="card set werk-only"><summary>Standaard dienst<span class="mu" id="h-dienst"></span></summary>
       <div class="row"><div><label for="ds">Start</label><input type="time" id="ds" onchange="saveDef()"></div><div><label for="de">Einde</label><input type="time" id="de" onchange="saveDef()"></div><div><label for="dp">Pauze min</label><input type="number" id="dp" min="0" onchange="saveDef()"></div></div>
-    </div>
-    <div class="card werk-only"><h2>Loon (cao VGL)</h2>
+    </details>
+    <details class="card set werk-only"><summary>Loon (cao VGL)<span class="mu" id="h-loon"></span></summary>
       <div class="row"><div><label for="ps">Schaal</label><select id="ps" onchange="savePay()"></select></div><div><label for="pt">Trede</label><select id="pt" onchange="savePay()"></select></div></div>
       <div class="row"><div><label for="pu">Uren/week</label><input id="pu" type="number" min="0" step="0.5" onchange="savePay()"></div><div><label for="pf">Voltijd uren</label><input id="pf" type="number" min="1" step="0.5" onchange="savePay()"></div><div><label for="pn">Netto %</label><input id="pn" type="text" inputmode="decimal" onchange="savePay()"></div></div>
       <div class="row"><div><label for="pa">Avond/nacht %</label><input id="pa" type="number" min="0" onchange="savePay()"></div><div><label for="pz">Zondag %</label><input id="pz" type="number" min="0" onchange="savePay()"></div><div><label for="pfe">Feestdag %</label><input id="pfe" type="number" min="0" onchange="savePay()"></div></div>
       <div class="mu" id="pinfo"></div>
       <button class="sm" style="margin-top:8px" onclick="resetPay()">standaardwaarden herstellen</button>
       <div class="mu" style="margin-top:6px">Avond/nacht = 22:00–06:00 ma–za. Tabel: cao VGL per 1 juli 2026. Percentages en netto% zijn aannames, controleer ze met je loonstrook.</div>
-    </div>
-    <div class="card" id="nfcard"><h2>Meldingen</h2>
+    </details>
+    <details class="card set" id="nfcard"><summary>Meldingen<span class="mu" id="h-nf"></span></summary>
       <p class="mu" style="margin-top:0">Echte meldingen op je telefoon via <a href="https://ntfy.sh" target="_blank" rel="noopener" style="color:var(--ac)">ntfy</a>, een gratis dienst. De tekst van een melding (bijv. de titel van een notitie) gaat via de server van ntfy.sh.</p>
       <button id="nfbtn" style="width:100%" onclick="nfToggle()"></button>
       <div id="nfbody" class="hide" style="margin-top:14px">
@@ -333,13 +343,13 @@ body[data-theme=vapor] .bgfx{background:radial-gradient(480px 300px at 0 0,#ff6e
         <p class="mu" id="nfstatus" style="margin:12px 0 0"></p>
         <p class="mu" style="margin:6px 0 0">Meldingen worden maximaal 3 dagen vooruit ingepland, telkens als je de app opent. Open de app dus minstens elke paar dagen. Een melding die je later wijzigt, kan nog één keer met de oude tekst komen.</p>
       </div>
-    </div>
+    </details>
     
-    <div class="card"><h2>Back-up</h2><div class="mu" id="bkinfo" style="margin-bottom:8px"></div><div class="row"><button onclick="exportData()">Exporteer</button><button onclick="document.getElementById('imp').click()">Importeer</button></div><button id="restore" class="hide" style="width:100%;margin-top:8px" onclick="restorePrev()">↩ Herstel vorige gegevens</button><input type="file" id="imp" class="hide" accept=".json" onchange="importData(this)"></div>
-    <div class="card werk-only"><h2>Herinnering</h2>
+    <details class="card set"><summary>Back-up<span class="mu" id="h-bk"></span></summary><div class="mu" id="bkinfo" style="margin-bottom:8px"></div><div class="row"><button onclick="exportData()">Exporteer</button><button onclick="document.getElementById('imp').click()">Importeer</button></div><button id="restore" class="hide" style="width:100%;margin-top:8px" onclick="restorePrev()">↩ Herstel vorige gegevens</button><input type="file" id="imp" class="hide" accept=".json" onchange="importData(this)"></details>
+    <details class="card set werk-only"><summary>Herinnering<span class="mu"></span></summary>
       <p class="mu" style="margin-top:0">Een agenda-bestand met een melding aan het einde van elke geplande dienst. Open het op je telefoon om het toe te voegen.</p>
       <button onclick="dlIcs()" style="width:100%">Zet herinneringen in mijn agenda</button>
-    </div>
+    </details>
   </div>
 </section>
 
@@ -560,17 +570,25 @@ function applyUi(){
   $('fx').innerHTML=(u.theme==='glass'?FX.glass:'');
   const m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',getComputedStyle(b).getPropertyValue('--bgsolid').trim()||'#080b1a');
 }
+const uiOpen={};
 function renderUi(){
   const el=$('uirows');if(!el)return;const u=S.ui;
   const chips=(key,obj,cur)=>`<div class="chips">`+Object.keys(obj).map(k=>`<span class="chip${k===cur?' on':''}" role="button" tabindex="0" onclick="setUi('${key}','${k}')">${Array.isArray(obj[k])?obj[k][0]:obj[k]}</span>`).join('')+`</div>`;
   const sw=(key,cur)=>`<div class="chips"><button class="swc auto${!cur?' on':''}" onclick="setUi('${key}','')" aria-label="Van thema"></button>`+ACCS.map(c=>`<button class="swc${cur===c?' on':''}" style="background:${c}" onclick="setUi('${key}','${c}')" aria-label="Kleur ${c}"></button>`).join('')+`</div>`;
-  el.innerHTML=`<div class="uirow"><label>Thema</label>${chips('theme',THEMES,u.theme)}</div><div class="uirow"><label>Vorm van de dagen</label>${chips('shape',SHAPES,u.shape)}</div><div class="uirow"><label>Animatie</label>${chips('anim',ANIMS,u.anim)}</div><div class="uirow"><label>Accent werk</label>${sw('accW',u.accW)}</div><div class="uirow"><label>Accent vrije tijd</label>${sw('accV',u.accV)}</div><div class="uirow"><label>Lettertype</label>${chips('font',FONTS,u.font)}</div><p class="mu" style="margin:0">Kies een thema als startpunt en pas daarna de onderdelen aan.</p>`;
+  const sub=(k,t,val,body)=>`<details class="sub" ${uiOpen[k]?'open':''} ontoggle="uiOpen['${k}']=this.open"><summary>${t}<span class="mu">${val}</span></summary>${body}</details>`;
+  const dot=c=>c?`<i style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${c};vertical-align:-1px"></i>`:'thema';
+  el.innerHTML=sub('theme','Thema',THEMES[u.theme][0],chips('theme',THEMES,u.theme))+sub('shape','Vorm van de dagen',SHAPES[u.shape],chips('shape',SHAPES,u.shape))+sub('anim','Animatie',ANIMS[u.anim],chips('anim',ANIMS,u.anim))+sub('accW','Accent werk',dot(u.accW),sw('accW',u.accW))+sub('accV','Accent vrije tijd',dot(u.accV),sw('accV',u.accV))+sub('font','Lettertype',FONTS[u.font],chips('font',FONTS,u.font))+`<p class="mu" style="margin:12px 0 0">Kies een thema als startpunt en pas daarna de onderdelen aan.</p>`;
+  const t=(id,v)=>{const x=$(id);if(x)x.textContent=v};
+  t('h-ui',THEMES[u.theme][0]);t('h-dienst',`${S.def.s}–${S.def.e}`);t('h-loon',`${S.pay.schaal} ${tLabel(S.pay.trede)}`);
+  t('h-nf',S.nf.on?'aan':'uit');t('h-bk',S.bk?new Date(S.bk).toLocaleDateString('nl-NL',{day:'numeric',month:'short'}):'nog niet');
+  t('h-app',isStandalone()?'geïnstalleerd':'');
 }
 function setUi(k,v){
   const u=S.ui;
   if(k==='theme'){u.theme=v;u.shape=THEMES[v][1];u.anim=THEMES[v][2];u.accW='';u.accV='';u.font=''}else u[k]=v;
-  save();applyUi();renderUi();enter();render();
+  save();applyUi();renderUi();render();
 }
+document.addEventListener('toggle',e=>{const d=e.target;if(d.matches&&d.matches('#a-set > details')&&d.open)document.querySelectorAll('#a-set > details').forEach(o=>{if(o!==d)o.open=false})},true);
 let enterT=0;
 function enter(){document.body.classList.add('entering');clearTimeout(enterT);enterT=setTimeout(()=>document.body.classList.remove('entering'),1600)}
 function stagger(){const sec=document.querySelector('main section:not(.hide)');if(sec)sec.querySelectorAll('.card').forEach((el,i)=>el.style.setProperty('--c',Math.min(i,8)))}

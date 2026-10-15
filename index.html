@@ -175,6 +175,7 @@ body[data-space=vrij]{--ac:#8fcfb0;--hi:#b8e6d0;--sel:#24403a;--okbg:#4c8f78;--p
 .lg{display:inline-block;width:14px;height:14px;border-radius:4px}
 .lg.w{background:var(--c-w)}.lg.plan{background:var(--c-p)}.lg.v{background:var(--c-v)}.lg.vak{background:var(--c-vak)}.lg.z{background:var(--c-z)}
 .lg.t{width:9px;height:9px;border-radius:50%;background:var(--today)}
+.swp{position:absolute;top:2px;right:4px;font-size:11px;font-style:normal;line-height:1}
 </style>
 </head>
 <body>
@@ -192,7 +193,8 @@ body[data-space=vrij]{--ac:#8fcfb0;--hi:#b8e6d0;--sel:#24403a;--okbg:#4c8f78;--p
   <div id="a-cal">
     <div class="card">
       <div class="cal" id="cal"></div>
-      <div class="legend werk-only"><span><i class="lg w"></i>gewerkt</span><span><i class="lg plan"></i>gepland</span><span><i class="lg v"></i>vrij</span><span><i class="lg vak"></i>vakantie</span><span><i class="lg z"></i>ziek</span><span><i class="lg t"></i>vandaag</span></div>
+      <div class="legend werk-only"><span><i class="lg w"></i>gewerkt</span><span><i class="lg plan"></i>gepland</span><span><i class="lg v"></i>vrij</span><span><i class="lg vak"></i>vakantie</span><span><i class="lg z"></i>ziek</span><span><i class="lg t"></i>vandaag</span><span>⇄ geruild</span></div>
+      <button class="link werk-only" style="display:block;margin:6px auto 0" onclick="openCopy()">rooster kopiëren…</button>
       <div class="legend vrij-only"><span><i class="lg plan"></i>plannen</span><span><i class="lg" style="background:var(--okbg)"></i>gekozen</span><span><i class="lg t"></i>vandaag</span></div>
       <p class="mu" id="calkey" style="text-align:center;margin:10px 0 0"></p>
     </div>
@@ -295,9 +297,19 @@ body[data-space=vrij]{--ac:#8fcfb0;--hi:#b8e6d0;--sel:#24403a;--okbg:#4c8f78;--p
   <h2 id="sdate"></h2>
   <div class="seg" id="stype" style="margin-bottom:12px"><button data-t="werk" onclick="sType('werk')">werk</button><button data-t="vrij" onclick="sType('vrij')">vrij</button><button data-t="vak" onclick="sType('vak')">vakantie</button><button data-t="ziek" onclick="sType('ziek')">ziek</button></div>
   <div class="row" id="stimes"><div><label for="ss">Start</label><input type="time" id="ss"></div><div><label for="se">Einde</label><input type="time" id="se"></div><div><label for="sp">Pauze min</label><input type="number" id="sp" min="0"></div></div>
+  <div id="sswapw" style="margin:2px 0 14px"><label class="chkrow" style="margin:0"><input type="checkbox" id="sswap" onchange="swapUI()">⇄ geruild met een collega</label><input id="sswapn" class="hide" placeholder="Met wie? (optioneel)" style="margin:10px 0 0"></div>
   <div class="row"><button class="p" onclick="saveDay()">Opslaan</button><button class="d" id="sdel" onclick="delDay()">Wissen</button></div>
 </div></div>
 
+<div class="sheet" id="csheet" role="dialog" aria-modal="true" aria-label="Rooster kopiëren" onclick="if(event.target===this)closeSheet()"><div>
+  <h2>Rooster kopiëren</h2>
+  <p class="mu" style="margin-top:0">Herhaalt het patroon van één week naar de weken erna. Een ruil wordt niet meegekopieerd.</p>
+  <label for="cweek">Kopieer de week van</label><input type="date" id="cweek" onchange="copyPreview()">
+  <label for="cn">Herhaal voor</label><select id="cn" onchange="copyPreview()"><option value="1">1 week</option><option value="2">2 weken</option><option value="3">3 weken</option><option value="4" selected>4 weken</option><option value="8">8 weken</option></select>
+  <label class="chkrow" style="margin:0 0 6px"><input type="checkbox" id="cow" onchange="copyPreview()">bestaande dagen overschrijven</label>
+  <p class="mu" id="cprev" style="min-height:22px"></p>
+  <div class="row"><button class="p" onclick="doCopy()">Kopiëren</button><button onclick="closeSheet()">Annuleren</button></div>
+</div></div>
 <div class="sheet" id="nsheet" role="dialog" aria-modal="true" aria-label="Notitie" onclick="if(event.target===this)closeNote()"><div>
   <label for="nt">Notitie</label><textarea id="nt" style="margin-bottom:10px"></textarea>
   <label>Label</label><div class="chips" id="nlab" style="margin-bottom:6px"></div>
@@ -461,16 +473,16 @@ function renderAgenda(){
   let h='';
   ['m','d','w','d','v','z','z'].forEach(d=>h+=`<div class="dh">${d}</div>`);
   for(let i=0;i<off;i++)h+='<div class="day e"></div>';
-  let tot=0,cnt=0;const oc={vrij:0,vak:0,ziek:0};
+  let tot=0,cnt=0,sc=0;const oc={vrij:0,vak:0,ziek:0};
   const rows=Math.ceil((off+n)/7),wk=[];
   for(let r=0;r<rows;r++)wk.push({first:Math.max(r*7-off+1,1),last:Math.min(r*7-off+7,n),h:0,d:0,now:false});
   for(let d=1;d<=n;d++){
     const k=`${y}-${pad(m+1)}-${pad(d)}`,sh=S.shifts[k],hh=sh?hours(sh):0,c=(off+d-1)%7,w=wk[Math.floor((off+d-1)/7)];
-    if(sh){tot+=hh;cnt++;w.h+=hh;w.d++}
+    if(sh){tot+=hh;cnt++;w.h+=hh;w.d++;if(sh.swap)sc++}
     if(k===today)w.now=true;
     const of=S.off[k];if(of)oc[of]++;
     const cls=['day',c>4?'we':'',sh?(k<=today?'w':'plan'):of?'o-'+of:(k<today?'past':''),k===today?'t':''].join(' ');
-    h+=`<div class="${cls}" aria-label="${d} ${monthName()}${sh?', '+fmtH(hh)+(k<=today?' gewerkt':' gepland'):of?', '+OFFN[of]:''}" onclick="dayTap('${k}')"><span class="dn">${d}</span></div>`;
+    h+=`<div class="${cls}" aria-label="${d} ${monthName()}${sh?', '+fmtH(hh)+(k<=today?' gewerkt':' gepland')+(sh.swap?', geruild':''):of?', '+OFFN[of]:''}" onclick="dayTap('${k}')"><span class="dn">${d}</span>${sh&&sh.swap?'<i class="swp">⇄</i>':''}</div>`;
   }
   $('cal').innerHTML=h;
   $('calkey').textContent='tik op een lege dag = inplannen · tik op een gekleurde dag = aanpassen';
@@ -482,7 +494,7 @@ function renderAgenda(){
   $('bkinfo').textContent=S.bk?'Laatste back-up: '+new Date(S.bk).toLocaleDateString('nl-NL',{day:'numeric',month:'long'}):'Nog geen back-up gemaakt.';
   try{$('restore').classList.toggle('hide',!localStorage.getItem(KEY+'-prev'))}catch(e){}
   renderPay();
-  $('offcount').textContent=[oc.vrij&&oc.vrij+' vrij',oc.vak&&oc.vak+' vakantie',oc.ziek&&oc.ziek+' ziek'].filter(Boolean).join(' · ');
+  $('offcount').textContent=[sc&&sc+' geruild',oc.vrij&&oc.vrij+' vrij',oc.vak&&oc.vak+' vakantie',oc.ziek&&oc.ziek+' ziek'].filter(Boolean).join(' · ');
   $('hchart').innerHTML=barChart(lastMonths(6).map(m=>({l:m.l,hi:m.hi,v:Object.keys(S.shifts).filter(d=>d.startsWith(m.k)).reduce((s,d)=>s+hours(S.shifts[d]),0)})),v=>Math.round(v)+'u');
   const mon=cur.toLocaleDateString('nl-NL',{month:'short'}).replace('.','');
   $('weeks').innerHTML=wk.map(w=>`<div class="wr${w.now?' now':''}"><div><b>wk ${isoWeek(new Date(y,m,w.first))}</b><div class="mu">${w.first}${w.last>w.first?'–'+w.last:''} ${mon}</div></div><div class="bar"><i style="width:${Math.min(100,w.h/40*100)}%"></i></div><b class="wh">${w.h?fmtH(w.h):'–'}</b></div>`).join('');
@@ -574,6 +586,7 @@ function renderVandaag(){
     else if(now>=e-60)main=`<h2 class="vt">Tijd voor je logboek</h2><p class="mu" style="margin:0">Je dienst eindigt om ${sh.e}.</p><div class="stack"><button class="p big-btn" onclick="logDate='${k}';tab('logboek')">Logboek schrijven</button></div>`;
     else if(now<s)main=`<h2 class="vt">Vandaag werk je</h2><div class="vbig">${sh.s}–${sh.e}</div><p class="mu" style="margin:0">Begint over ${untilTxt(s-now)}.</p>`;
     else main=`<h2 class="vt">Je werkt tot ${sh.e}</h2><p class="mu" style="margin:0">Nog ${untilTxt(e-now)}. Het logboek komt straks.</p>`;
+    if(sh.swap)main+=`<p style="margin:10px 0 0"><span class="tag">⇄ geruild${sh.swap!=='ja'?' met '+esc(sh.swap):''}</span></p>`;
     main+=`<button class="link" onclick="openDay('${k}')">dienst aanpassen</button>`;
   }
   const open=spNotes().filter(n=>!n.done),pick=open.filter(n=>n.star||['late','today'].includes(dueState(n))).sort(byDue),shown=pick.slice(0,3),more=pick.length-shown.length;
@@ -718,21 +731,45 @@ function dlIcs(){
 }
 const OFFN={vrij:'vrij',vak:'vakantie',ziek:'ziek'};
 let sTyp='werk';
-function sType(t){sTyp=t;$('stimes').classList.toggle('hide',t!=='werk');document.querySelectorAll('#stype button').forEach(b=>b.classList.toggle('on',b.dataset.t===t))}
+function swapUI(){$('sswapn').classList.toggle('hide',!$('sswap').checked)}
+function sType(t){sTyp=t;$('stimes').classList.toggle('hide',t!=='werk');$('sswapw').classList.toggle('hide',t!=='werk');document.querySelectorAll('#stype button').forEach(b=>b.classList.toggle('on',b.dataset.t===t))}
 function openDay(k){
   editDate=k;const sh=S.shifts[k]||S.def;
   $('sdate').textContent=new Date(k+'T12:00').toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'});
   $('ss').value=sh.s;$('se').value=sh.e;$('sp').value=sh.p;
   sType(S.off[k]||'werk');
+  {const cur=S.shifts[k],sw=cur&&cur.swap;$('sswap').checked=!!sw;$('sswapn').value=(sw&&sw!=='ja')?sw:'';swapUI()}
   $('sdel').style.display=(S.shifts[k]||S.off[k])?'':'none';
   $('sheet').classList.add('on');setTimeout(()=>{if(sTyp==='werk')$('ss').focus()},50);
 }
-function closeSheet(){$('sheet').classList.remove('on');$('nsheet').classList.remove('on');$('asheet').classList.remove('on')}
+function weekMonday(s){const d=new Date(s+'T12:00');d.setDate(d.getDate()-((d.getDay()+6)%7));return d}
+function copyPlan(){
+  const src=weekMonday($('cweek').value||ymd(new Date())),n=+$('cn').value,ow=$('cow').checked,ch=[];
+  for(let w=1;w<=n;w++)for(let i=0;i<7;i++){
+    const s=new Date(src),t=new Date(src);s.setDate(s.getDate()+i);t.setDate(t.getDate()+7*w+i);
+    const sk=ymd(s),tk=ymd(t),sh=S.shifts[sk],of=S.off[sk];
+    if(!sh&&!of)continue;
+    if((S.shifts[tk]||S.off[tk])&&!ow)continue;
+    ch.push([tk,sh,of]);
+  }
+  return ch;
+}
+function copyPreview(){const n=copyPlan().length;$('cprev').textContent=n?`${n} ${n===1?'dag wordt':'dagen worden'} ingevuld.`:'Niets te kopiëren: de bronweek is leeg of de doelweken zitten al vol.'}
+function openCopy(){$('cweek').value=ymd(weekMonday(ymd(new Date())));copyPreview();$('csheet').classList.add('on')}
+function doCopy(){
+  const ch=copyPlan();if(!ch.length){toast('Niets te kopiëren');return}
+  const prev=ch.map(([k])=>[k,S.shifts[k]||null,S.off[k]||null]),l0=xpState().lvl;
+  ch.forEach(([k,sh,of])=>{delete S.shifts[k];delete S.off[k];if(sh){const c={...sh};delete c.swap;S.shifts[k]=c}else S.off[k]=of});
+  save();closeSheet();render();lvlCheck(l0);
+  toast(`${ch.length} dagen gekopieerd`,()=>{prev.forEach(([k,sh,of])=>{delete S.shifts[k];delete S.off[k];if(sh)S.shifts[k]=sh;if(of)S.off[k]=of});save();render()});
+}
+function closeSheet(){$('csheet').classList.remove('on');$('sheet').classList.remove('on');$('nsheet').classList.remove('on');$('asheet').classList.remove('on')}
 function saveDay(){
   const l0=xpState().lvl,k=editDate;
   if(sTyp==='werk'){
     if(!$('ss').value||!$('se').value){toast('Vul start en einde in');return}
     S.shifts[k]={s:$('ss').value,e:$('se').value,p:+$('sp').value||0};delete S.off[k];
+    if($('sswap').checked)S.shifts[k].swap=$('sswapn').value.trim()||'ja';
   }else{S.off[k]=sTyp;delete S.shifts[k]}
   save();closeSheet();render();lvlCheck(l0);
 }

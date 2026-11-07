@@ -82,6 +82,8 @@ label{font-size:13px;color:var(--mu);display:block;margin:0 0 5px}
 .lstat{font-size:13px;color:var(--mu);margin:0 0 10px;display:flex;align-items:center;gap:8px}
 .lstat .dot{width:8px;height:8px;border-radius:50%;background:var(--ac)}
 .lh{display:flex;justify-content:space-between;align-items:center;font-weight:700;margin-bottom:10px}
+.chip .pe{font-style:normal;opacity:.7;margin-left:2px;padding:0 2px}
+#psheet>div{max-height:92vh;overflow:auto}
 .lfoot{display:flex;gap:18px;margin-top:6px}
 .tgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .tile{position:relative;display:flex;align-items:center;justify-content:center;text-align:center;min-height:48px;padding:8px 10px;background:var(--c0);border:var(--bw) solid var(--line);border-radius:var(--rp,12px);font-size:14px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
@@ -375,7 +377,8 @@ body[data-theme=vapor] .bgfx{background:radial-gradient(480px 300px at 0 0,#ff6e
   <div class="card">
     <div class="row" style="align-items:center;gap:6px;margin-bottom:10px"><button onclick="shiftLog(-1)" style="flex:0 0 auto" aria-label="Vorige dag">‹</button><input type="date" id="ldate" style="margin:0" onchange="logDate=this.value||logDate;render()"><button onclick="shiftLog(1)" style="flex:0 0 auto" aria-label="Volgende dag">›</button></div>
     <div id="lstat" class="lstat"></div>
-    <div class="chips" style="margin:0"><button class="sm" onclick="copyPrev()">↩ vorige keer</button><span id="lprof"></span><button class="sm" onclick="saveProf()">+ profiel</button></div>
+    <div class="chips" style="margin:0"><button class="sm" onclick="copyPrev()">↩ vorige keer</button><span id="lprof"></span><button class="sm" onclick="openProf(-1)">+ profiel</button></div>
+    <div class="mu" style="font-size:12px;margin-top:8px">Een profiel is een set tegels die je met één tik aanzet. Maak er zelf een met “+ profiel”; met ✎ pas je het aan.</div>
   </div>
   <div id="lsecs"></div>
   <div class="card"><div class="lh"><span>Resultaat</span><button class="link" onclick="editLt=!editLt;renderLog()" id="ledit"></button></div><pre id="lprev" style="margin:0"></pre></div>
@@ -406,6 +409,13 @@ body[data-theme=vapor] .bgfx{background:radial-gradient(480px 300px at 0 0,#ff6e
   <label class="chkrow" style="margin:0 0 6px"><input type="checkbox" id="cow" onchange="copyPreview()">bestaande dagen overschrijven</label>
   <p class="mu" id="cprev" style="min-height:22px"></p>
   <div class="row"><button class="p" onclick="doCopy()">Kopiëren</button><button onclick="closeSheet()">Annuleren</button></div>
+</div></div>
+<div class="sheet" id="psheet" role="dialog" aria-modal="true" aria-labelledby="ptitle" onclick="if(event.target===this)closeProf()"><div>
+  <h2 id="ptitle">Nieuw profiel</h2>
+  <label for="pname">Naam</label><input id="pname" placeholder="bijv. Drukke dag" style="margin-bottom:4px">
+  <div class="mu" style="font-size:13px">Kies welke tegels bij dit profiel horen.</div>
+  <div id="pbody"></div>
+  <div class="row" style="margin-top:16px"><button class="p" onclick="saveProf()">Opslaan</button><button id="pdel" class="d" onclick="delProf()">Verwijderen</button><button onclick="closeProf()">Annuleren</button></div>
 </div></div>
 <div class="sheet" id="nsheet" role="dialog" aria-modal="true" aria-label="Notitie" onclick="if(event.target===this)closeNote()"><div>
   <label for="nt">Notitie</label><textarea id="nt" style="margin-bottom:10px"></textarea>
@@ -441,7 +451,7 @@ S.pay=S.pay||{schaal:'D',trede:'21/2',uren:32,full:40,pAv:50,pZo:50,pFe:100,net:
 S.budget=S.budget||{};            // categorie -> maandbudget
 S.rec=S.rec||[];                  // {id,a,c,n,day,start:'YYYY-MM'}
 S.recDone=S.recDone||[];
-S.profiles=S.profiles||[{name:'Rustige dag',on:{pers:['Iedereen top vanavond!'],winkel:['lege vakken gelopen'],haccp:['koffiehoek'],diefstal:[]},n:{}},{name:'Drukke dag',on:{pers:['Iedereen top vanavond!','4 man tijdens vers vracht is erg weinig.'],winkel:['# dolly vers','# kar hb','hb restanten gelopen','lege vakken gelopen'],haccp:['koffiehoek'],diefstal:['Paar pogingen tot gestopt in de winkel']},n:{}}];
+S.profiles=(S.profiles||[]).filter(p=>!((p.name==='Rustige dag'||p.name==='Drukke dag')&&!p.mine));
 S.store=S.store||'5873';
 S.logs=S.logs||{};                // 'YYYY-MM-DD' -> {on:{sec:[zinnen]},n:{zin:aantal},x:{sec:extra},end}
 S.lt=S.lt||{pers:['Iedereen top vanavond!','4 man tijdens vers vracht is erg weinig.','Lijkt me handiger om 5 man te hebben tussen 17.00/21.00 ivm fris en vers vullen.'],
@@ -905,13 +915,35 @@ function copyPrev(){
   SEC.forEach(s=>L.on[s[0]]=[...P.on[s[0]]]);L.n={...P.n};
   commit(L);renderLog();
 }
-function applyProf(i){const f=S.profiles[i],L=getLog(logDate);SEC.forEach(s=>L.on[s[0]]=[...(f.on[s[0]]||[])]);L.n={...f.n};commit(L);renderLog()}
-function saveProf(){
-  const name=(prompt('Naam van het profiel (bijv. "Drukke dag")')||'').trim();if(!name)return;
-  const L=getLog(logDate),o={};SEC.forEach(s=>o[s[0]]=[...L.on[s[0]]]);
-  S.profiles=S.profiles.filter(p=>p.name!==name);S.profiles.push({name,on:o,n:{...L.n}});save();renderLog();
+function applyProf(i){const f=S.profiles[i],L=getLog(logDate);SEC.forEach(s=>{const a=L.on[s[0]];(f.on[s[0]]||[]).forEach(z=>{if(!a.includes(z))a.push(z)})});Object.keys(f.n).forEach(z=>L.n[z]=Math.max(L.n[z]||0,f.n[z]));commit(L);renderLog();toast('Profiel "'+f.name+'" toegevoegd')}
+let pEdit=-1,pDraft=null;
+function openProf(i){
+  pEdit=i;
+  if(i>=0){const f=S.profiles[i];pDraft={name:f.name,on:{},n:{...f.n}};SEC.forEach(([k])=>pDraft.on[k]=[...(f.on[k]||[])])}
+  else{const L=getLog(logDate);pDraft={name:'',on:{},n:{...L.n}};SEC.forEach(([k])=>pDraft.on[k]=[]);}
+  fillProf();$('psheet').classList.add('on');
 }
-function delProf(i){if(confirm('Profiel verwijderen?')){S.profiles.splice(i,1);save();renderLog()}}
+function fillProf(){
+  $('pname').value=pDraft.name;
+  $('pdel').classList.toggle('hide',pEdit<0);
+  $('ptitle').textContent=pEdit<0?'Nieuw profiel':'Profiel aanpassen';
+  $('pbody').innerHTML=SEC.map(([k,name])=>`<div class="lh" style="margin:12px 0 8px"><span>${name}</span></div><div class="tgrid">`+S.lt[k].map((z,i)=>{
+    const on=pDraft.on[k].includes(z),num=z.includes('#');
+    if(num&&on)return `<div class="tile num on"><button class="stp" onclick="pStp('${k}',${i},-1)">−</button><div class="tc"><b>${pDraft.n[z]||1}</b><span>${esc(z.replace('#','').trim())}</span></div><button class="stp" onclick="pStp('${k}',${i},1)">+</button></div>`;
+    return `<div class="tile tog${on?' on':''}${z.length>22&&!num?' wide':''}" onclick="pTg('${k}',${i})">${esc(num?z.replace('#','…'):z)}</div>`;
+  }).join('')+`</div>`).join('');
+}
+function pTg(k,i){const z=S.lt[k][i],a=pDraft.on[k],j=a.indexOf(z);if(j<0){a.push(z);if(z.includes('#'))pDraft.n[z]=pDraft.n[z]||1}else a.splice(j,1);pDraft.name=$('pname').value;fillProf()}
+function pStp(k,i,d){const z=S.lt[k][i],n=(pDraft.n[z]||1)+d;if(n<1){const a=pDraft.on[k];a.splice(a.indexOf(z),1)}else pDraft.n[z]=n;pDraft.name=$('pname').value;fillProf()}
+function saveProf(){
+  const name=$('pname').value.trim();if(!name){toast('Geef het profiel een naam');return}
+  const o={},n={};SEC.forEach(([k])=>{o[k]=[...pDraft.on[k]];o[k].forEach(z=>{if(z.includes('#'))n[z]=pDraft.n[z]||1})});
+  const pr={name,on:o,n,mine:true};
+  if(pEdit>=0)S.profiles[pEdit]=pr;else{S.profiles=S.profiles.filter(x=>x.name!==name);S.profiles.push(pr)}
+  save();closeProf();renderLog();toast('Profiel opgeslagen')
+}
+function closeProf(){$('psheet').classList.remove('on')}
+function delProf(){if(pEdit<0)return;const o=S.profiles[pEdit];S.profiles.splice(pEdit,1);save();closeProf();renderLog();toast('Profiel verwijderd',()=>{S.profiles.push(o);save();renderLog()})}
 function logText(d){
   const L=getLog(d),[y,m,dd]=d.split('-');
   let t=`${S.store} ${dd}/${m}\n`;
@@ -949,7 +981,7 @@ function secCard(k,name,L){
 function renderLog(){
   const L=getLog(logDate);
   $('ldate').value=logDate;$('lstore').value=S.store;
-  $('lprof').innerHTML=S.profiles.map((p,i)=>`<span class="chip" onclick="applyProf(${i})">${esc(p.name)}${editLt?`<i onclick="event.stopPropagation();delProf(${i})" style="font-style:normal;color:var(--bad)">✕</i>`:''}</span>`).join('');
+  $('lprof').innerHTML=S.profiles.map((p,i)=>`<span class="chip" onclick="applyProf(${i})">${esc(p.name)}<i class="pe" onclick="event.stopPropagation();openProf(${i})" aria-label="Profiel aanpassen">✎</i></span>`).join('');
   $('lsecs').innerHTML=SEC.map(([k,name])=>secCard(k,name,L)).join('')+`<div class="card lsec"><div class="lh"><span>Overige</span></div><textarea placeholder="Overige opmerkingen…" oninput="setX('over',this.value)" rows="2" style="margin:0">${esc(L.x.over||'')}</textarea></div>`;
   $('ledit').textContent=editLt?'klaar met aanpassen':'tegels aanpassen';
   stat();updPrev();

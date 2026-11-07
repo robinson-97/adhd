@@ -294,11 +294,10 @@ body[data-theme=vapor] .bgfx{background:radial-gradient(480px 300px at 0 0,#ff6e
 <div class="bgfx" id="fx"></div>
 <div class="topbar"><span class="clock" id="clock"></span></div>
 <div id="toast" role="status" aria-live="polite"></div>
-<section id="v-vandaag" class="hide"><div class="vdate" id="vdate"></div><div id="vd"></div></section>
 
 <section id="v-agenda">
   <div class="card hide" id="bk"></div>
-  <div class="seg"><button id="as-cal" onclick="ago('cal')">kalender</button><button id="as-over" class="werk-only" onclick="ago('over')">overzicht</button><button id="as-set" onclick="ago('set')">instellingen</button></div>
+  <div class="seg"><button id="as-cal" onclick="ago('cal')">kalender</button><button id="as-over" class="werk-only" onclick="ago('over')">overzicht</button></div>
   <div class="nav" id="anav"><button onclick="mv(-1)" aria-label="Vorige maand">‹</button><b id="mlabel"></b><button onclick="mv(1)" aria-label="Volgende maand">›</button></div>
 
   <div id="a-cal">
@@ -323,7 +322,18 @@ body[data-theme=vapor] .bgfx{background:radial-gradient(480px 300px at 0 0,#ff6e
     </div>
   </div>
 
-  <div id="a-set" class="hide">
+</section>
+
+
+
+<section id="v-hoofd" class="hide">
+  <div class="card"><div class="row" style="gap:6px"><input id="ni" placeholder="Noteer iets…" style="margin:0" enterkeyhint="done" onkeydown="if(event.key==='Enter')addNote()"><button id="nmic" style="flex:0 0 auto" onclick="dictate()" aria-label="Inspreken">🎤</button><button class="p" style="flex:0 0 auto" onclick="addNote()" aria-label="Toevoegen">+</button></div></div>
+  <div id="nopen"></div>
+  <details class="card" id="ndone"><summary id="ndsum"></summary><div id="ndl"></div><button class="d sm" style="margin-top:8px" onclick="clearDone()">wis alles wat klaar is</button></details>
+</section>
+
+<section id="v-instellingen" class="hide">
+  <div id="a-set">
     <details class="card set" id="appcard"><summary>App<span class="mu" id="h-app"></span></summary><div class="mu" id="apptxt" style="margin-bottom:8px"></div><div class="mu" id="appver" style="margin-bottom:8px"></div><button class="sm" style="margin-bottom:8px" onclick="location.reload()">nu verversen</button><button class="p hide" id="appbtn" style="width:100%" onclick="installApp()">Installeer app</button></details>
     <details class="card set" id="uicard"><summary>Uiterlijk<span class="mu" id="h-ui"></span></summary><div id="uirows"></div></details>
     <details class="card set werk-only"><summary>Standaard dienst<span class="mu" id="h-dienst"></span></summary>
@@ -359,14 +369,6 @@ body[data-theme=vapor] .bgfx{background:radial-gradient(480px 300px at 0 0,#ff6e
   </div>
 </section>
 
-
-
-<section id="v-hoofd" class="hide">
-  <div class="card"><div class="row" style="gap:6px"><input id="ni" placeholder="Noteer iets…" style="margin:0" enterkeyhint="done" onkeydown="if(event.key==='Enter')addNote()"><button id="nmic" style="flex:0 0 auto" onclick="dictate()" aria-label="Inspreken">🎤</button><button class="p" style="flex:0 0 auto" onclick="addNote()" aria-label="Toevoegen">+</button></div></div>
-  <div id="nopen"></div>
-  <details class="card" id="ndone"><summary id="ndsum"></summary><div id="ndl"></div><button class="d sm" style="margin-top:8px" onclick="clearDone()">wis alles wat klaar is</button></details>
-</section>
-
 <section id="v-logboek" class="hide">
   <div class="card">
     <div class="row" style="align-items:center;gap:6px;margin-bottom:10px"><button onclick="shiftLog(-1)" style="flex:0 0 auto" aria-label="Vorige dag">‹</button><input type="date" id="ldate" style="margin:0" onchange="logDate=this.value||logDate;render()"><button onclick="shiftLog(1)" style="flex:0 0 auto" aria-label="Volgende dag">›</button></div>
@@ -384,7 +386,7 @@ body[data-theme=vapor] .bgfx{background:radial-gradient(480px 300px at 0 0,#ff6e
 </section>
 </main>
 
-<div class="tabs"><button id="t-agenda" class="on" onclick="tab('agenda')">agenda</button><button id="t-vandaag" onclick="tab('vandaag')">vandaag</button><button id="t-logboek" onclick="tab('logboek')">logboek</button><button id="t-hoofd" onclick="tab('hoofd')">hoofd</button></div>
+<div class="tabs"><button id="t-agenda" class="on" onclick="tab('agenda')">agenda</button><button id="t-logboek" onclick="tab('logboek')">logboek</button><button id="t-hoofd" onclick="tab('hoofd')">hoofd</button><button id="t-instellingen" onclick="tab('instellingen')">instellingen</button></div>
 
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sdate" onclick="if(event.target===this)closeSheet()"><div>
   <h2 id="sdate"></h2>
@@ -478,11 +480,11 @@ const monthKey=()=>`${cur.getFullYear()}-${pad(cur.getMonth()+1)}`;
 const monthName=()=>cur.toLocaleDateString('nl-NL',{month:'long',year:'numeric'});
 
 function mv(n){cur.setMonth(cur.getMonth()+n);enter();render()}
-function tab(t){enter();if(t==='agenda'){apage='cal';cur=new Date();cur.setDate(1)}curTab=t;document.body.dataset.tab=t;['vandaag','agenda','logboek','hoofd'].forEach(x=>$('v-'+x).classList.toggle('hide',x!==t));['vandaag','agenda','logboek','hoofd'].forEach(x=>{$('t-'+x).classList.toggle('on',x===t);$('t-'+x).setAttribute('aria-current',x===t?'page':'false')});render();scrollTo(0,0)}
+function tab(t){enter();if(t==='agenda'){apage='cal';cur=new Date();cur.setDate(1)}curTab=t;document.body.dataset.tab=t;['agenda','logboek','hoofd','instellingen'].forEach(x=>$('v-'+x).classList.toggle('hide',x!==t));['agenda','logboek','hoofd','instellingen'].forEach(x=>{$('t-'+x).classList.toggle('on',x===t);$('t-'+x).setAttribute('aria-current',x===t?'page':'false')});render();scrollTo(0,0)}
 
 function render(){
   $('mlabel').textContent=$('mlabel3').textContent=monthName();
-  curTab==='vandaag'?renderVandaag():curTab==='agenda'?renderAgenda():curTab==='hoofd'?renderHoofd():renderLog();
+  curTab==='agenda'||curTab==='instellingen'?renderAgenda():curTab==='hoofd'?renderHoofd():renderLog();
   renderTop();renderBk();stagger();a11y();
 }
 
@@ -594,8 +596,7 @@ function calView(cells,off,center){
 let apage='cal';
 function ago(p){apage=p;renderAgenda()}
 function renderAgenda(){
-  ['cal','over','set'].forEach(k=>{$('a-'+k).classList.toggle('hide',k!==apage);$('as-'+k).classList.toggle('on',k===apage)});
-  $('anav').classList.toggle('hide',apage==='set');
+  ['cal','over'].forEach(k=>{$('a-'+k).classList.toggle('hide',k!==apage);$('as-'+k).classList.toggle('on',k===apage)});
   renderApp();renderNf();
   const y=cur.getFullYear(),m=cur.getMonth(),n=new Date(y,m+1,0).getDate();
   const off=(new Date(y,m,1).getDay()+6)%7,today=ymd(new Date());
@@ -696,28 +697,6 @@ function saveDef(){S.def={s:$('ds').value||'14:30',e:$('de').value||'23:00',p:+$
 const nowMin=()=>{const d=new Date();return d.getHours()*60+d.getMinutes()};
 const tmin=s=>{const [a,b]=s.split(':').map(Number);return a*60+b};
 const untilTxt=m=>m>=60?Math.floor(m/60)+(m%60?' u '+(m%60)+' min':' uur'):m+' min';
-function miniRow(n){return `<div class="li note"><span class="chk" role="button" tabindex="0" onclick="toggleNote(${n.id})" aria-label="Afvinken"></span><div class="nt" onclick="openNote(${n.id})"><div>${esc(n.t)}</div></div></div>`}
-function renderVandaag(){
-  const k=ymd(new Date()),sh=S.shifts[k],of=S.off[k],log=hasLog(k),now=nowMin();
-  {const t=new Date().toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'});$('vdate').textContent=t.charAt(0).toUpperCase()+t.slice(1)}
-  let main;
-  if(!sh&&!of){
-    main=`<h2 class="vt">Werk je vandaag?</h2><div class="stack"><button class="p big-btn" onclick="quickToday()">Ja, ${S.def.s}–${S.def.e}</button><button class="big-btn" onclick="offToday()">Nee, vrij</button></div><button class="link" onclick="openDay('${k}')">andere tijden of verlof</button>`;
-  }else if(of){
-    main=`<h2 class="vt">Vandaag: ${OFFN[of]}</h2><p class="mu" style="margin:0">Niets te doen. Rust maar uit.</p><button class="link" onclick="openDay('${k}')">aanpassen</button>`;
-  }else{
-    const s=tmin(sh.s),e=tmin(sh.e)+(tmin(sh.e)<=tmin(sh.s)?1440:0);
-    if(log)main=`<h2 class="vt">Logboek bijgehouden ✓</h2><p class="mu" style="margin:0">${logCount(k)} dingen ingevuld.</p><div class="stack"><button class="p big-btn" onclick="logDate='${k}';tab('logboek')">Verder invullen of kopiëren</button></div>`;
-    else if(now>=e-60)main=`<h2 class="vt">Tijd voor je logboek</h2><p class="mu" style="margin:0">Je dienst eindigt om ${sh.e}.</p><div class="stack"><button class="p big-btn" onclick="logDate='${k}';tab('logboek')">Logboek schrijven</button></div>`;
-    else if(now<s)main=`<h2 class="vt">Vandaag werk je</h2><div class="vbig">${sh.s}–${sh.e}</div><p class="mu" style="margin:0">Begint over ${untilTxt(s-now)}.</p>`;
-    else main=`<h2 class="vt">Je werkt tot ${sh.e}</h2><p class="mu" style="margin:0">Nog ${untilTxt(e-now)}. Het logboek komt straks.</p>`;
-    if(sh.swap)main+=`<p style="margin:10px 0 0"><span class="tag">⇄ geruild${sh.swap!=='ja'?' met '+esc(sh.swap):''}</span></p>`;
-    main+=`<button class="link" onclick="openDay('${k}')">dienst aanpassen</button>`;
-  }
-  const open=spNotes().filter(n=>!n.done).sort((a,b)=>b.id-a.id),shown=open.slice(0,3),more=open.length-shown.length;
-  const tasks=`<h2>In je hoofd</h2>`+(shown.length?shown.map(miniRow).join(''):`<p class="mu" style="margin:0">Je hoofd is leeg ✓</p>`)+(more>0?`<button class="link" onclick="tab('hoofd')">nog ${more} meer</button>`:'');
-  $('vd').innerHTML=`<div class="card">${main}</div><div class="card">${tasks}</div>`;
-}
 /* ---------- Meldingen (ntfy) ---------- */
 function renderNf(){
   const N=S.nf;if(!$('nfbtn'))return;
@@ -776,9 +755,6 @@ function settingsCommon(){
   $('bkinfo').textContent=S.bk?'Laatste back-up: '+new Date(S.bk).toLocaleDateString('nl-NL',{day:'numeric',month:'long'}):'Nog geen back-up gemaakt.';
   try{$('restore').classList.toggle('hide',!localStorage.getItem(KEY+'-prev'))}catch(e){}
 }
-setInterval(()=>{if(curTab==='vandaag'&&!document.hidden)renderVandaag()},60000);
-function quickToday(){const k=ymd(new Date());S.shifts[k]={...S.def};save();render();toast('Ingepland',()=>{delete S.shifts[k];save();render()})}
-function offToday(){const k=ymd(new Date()),o=S.shifts[k];delete S.shifts[k];S.off[k]='vrij';save();render();toast('Vrij gezet',()=>{if(o)S.shifts[k]=o;delete S.off[k];save();render()})}
 function dlIcs(){
   const today=ymd(new Date()),z=n=>String(n).padStart(2,'0');
   const stamp=d=>`${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}T${z(d.getHours())}${z(d.getMinutes())}00`;
@@ -998,7 +974,7 @@ applyUi();
 setTimeout(()=>{if(typeof syncNtfy==='function')syncNtfy()},2500);
 document.body.dataset.tab='agenda';document.body.dataset.space=S.space;
 render();
-{const q=new URLSearchParams(location.search).get('tab');if(['vandaag','agenda','logboek','hoofd'].includes(q))tab(q);else tab('agenda')}
+{const q=new URLSearchParams(location.search).get('tab');if(['agenda','logboek','hoofd','instellingen'].includes(q))tab(q);else tab('agenda')}
 if('serviceWorker' in navigator){
   const had=!!navigator.serviceWorker.controller;
   navigator.serviceWorker.register('sw.js').catch(()=>{});

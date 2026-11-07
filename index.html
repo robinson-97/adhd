@@ -83,6 +83,7 @@ label{font-size:13px;color:var(--mu);display:block;margin:0 0 5px}
 .lstat{font-size:13px;color:var(--mu);margin:0 0 10px;display:flex;align-items:center;gap:8px}
 .lstat .dot{width:8px;height:8px;border-radius:50%;background:var(--ac)}
 .lh{display:flex;justify-content:space-between;align-items:center;font-weight:700;margin-bottom:10px}
+.lfoot{display:flex;gap:18px;margin-top:6px}
 .tgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .tile{position:relative;display:flex;align-items:center;justify-content:center;text-align:center;min-height:48px;padding:8px 10px;background:var(--c0);border:var(--bw) solid var(--line);border-radius:var(--rp,12px);font-size:14px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
 .tile.wide{grid-column:span 2}
@@ -1063,7 +1064,12 @@ function logCount(d){const L=S.logs[d];if(!L)return 0;return Object.values(L.on|
 function stat(){const L=S.logs[logDate],el=$('lstat');if(!el)return;
   el.innerHTML=hasLog(logDate)?`<span class="dot"></span>Opgeslagen · ${logCount(logDate)} ingevuld${L.ts?' · '+new Date(L.ts).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}):''}`:'Nog leeg — wat je invult wordt automatisch bewaard'}
 function setX(k,v){const L=getLog(logDate);L.x[k]=v;commit(L);updPrev()}
-function addLt(k){const el=$('nl-'+k),v=el.value.trim();if(v&&!S.lt[k].includes(v)){S.lt[k].push(v);save();renderLog()}}
+let lnew='';
+function lnw(k){lnew=lnew===k?'':k;renderLog();if(lnew)setTimeout(()=>{const e=$('nl-'+k);e&&e.focus()},30)}
+function addLt(k){const el=$('nl-'+k),v=el.value.trim();if(!v)return;
+  let i=S.lt[k].indexOf(v);if(i<0){S.lt[k].push(v);i=S.lt[k].length-1}
+  const L=getLog(logDate);if(!L.on[k].includes(v)){L.on[k].push(v);if(v.includes('#'))L.n[v]=L.n[v]||1}
+  lnew='';commit(L);renderLog();toast('Tegel toegevoegd en aangezet')}
 function delLt(k,i){S.lt[k].splice(i,1);save();renderLog()}
 
 function shiftLog(n){const d=new Date(logDate+'T12:00');d.setDate(d.getDate()+n);logDate=ymd(d);render()}
@@ -1108,9 +1114,10 @@ function secCard(k,name,L){
     }
     return `<div class="tile tog${on?' on':''}${z.length>22?' wide':''}" onclick="tg('${k}',${i})">${esc(z)}${x}</div>`;
   }).join('');
-  const add=editLt?`<div class="row" style="margin-top:8px"><input id="nl-${k}" placeholder="Nieuwe tegel (# = aantal)" style="margin:0"><button onclick="addLt('${k}')" style="flex:0 0 auto">+</button></div>`:'';
+  const add=lnew===k?`<div class="row" style="margin-top:8px"><input id="nl-${k}" placeholder="Nieuwe tegel — # wordt een aantal" enterkeyhint="done" onkeydown="if(event.key==='Enter')addLt('${k}')" style="margin:0"><button class="p" onclick="addLt('${k}')" style="flex:0 0 auto">Voeg toe</button></div>`:'';
   const hasX=(L.x[k]||'').trim(),xo=lx[k]||hasX;
-  const ex=xo?`<textarea placeholder="Extra…" oninput="setX('${k}',this.value)" rows="2" style="margin:8px 0 0">${esc(L.x[k]||'')}</textarea>`:`<button class="link" onclick="lxo('${k}')">+ extra</button>`;
+  const ex0=xo?`<textarea placeholder="Extra…" oninput="setX('${k}',this.value)" rows="2" style="margin:8px 0 0">${esc(L.x[k]||'')}</textarea>`:`<button class="link" onclick="lxo('${k}')">+ extra</button>`;
+  const ex=`<div class="lfoot">${ex0.startsWith('<button')?ex0:''}<button class="link" onclick="lnw('${k}')">+ tegel</button></div>${ex0.startsWith('<button')?'':ex0}`;
   const n=L.on[k].length+(hasX?1:0);
   return `<div class="card lsec"><div class="lh"><span>${name}</span><span class="mu">${n||''}</span></div><div class="tgrid">${tiles}</div>${add}${ex}</div>`;
 }

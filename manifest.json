@@ -18,6 +18,6 @@
   ],
   "shortcuts": [
     {"name": "Logboek schrijven", "short_name": "Logboek", "url": "./?tab=logboek", "icons": [{"src": "icon-192.png", "sizes": "192x192"}]},
-    {"name": "Hoofd leegmaken", "short_name": "Hoofd", "url": "./?tab=hoofd", "icons": [{"src": "icon-192.png", "sizes": "192x192"}]}
+    {"name": "Notities", "short_name": "Notities", "url": "./?tab=hoofd", "icons": [{"src": "icon-192.png", "sizes": "192x192"}]}
   ]
 }

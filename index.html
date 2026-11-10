@@ -403,7 +403,7 @@ body[data-theme=vapor] .bgfx{background:radial-gradient(480px 300px at 0 0,#ff6e
   <div class="seg lseg" id="lseg" style="margin-bottom:10px"></div>
   <div id="lsecs"></div>
   <div class="card hide" id="lres"><div class="lh"><span>Resultaat</span><span><button class="link" onclick="openHist()">eerdere logboeken</button> · <button class="link" onclick="editLt=!editLt;renderLog()" id="ledit"></button></span></div><pre id="lprev" style="margin:0"></pre></div>
-  <div class="stickybar"><button class="p" onclick="copyLog()">Kopieer logboek</button><button onclick="dlLog()" style="flex:0 0 auto">.txt</button></div>
+  <div class="stickybar"><button class="p" onclick="copyLog()">Kopieer logboek</button><button onclick="dlLog()" style="flex:0 0 auto">.txt</button><button class="d" onclick="clearLog()" style="flex:0 0 auto" aria-label="Logboek wissen">Wis</button></div>
 </section>
 </main>
 
@@ -1028,6 +1028,11 @@ function countUse(){
   const L=getLog(logDate);if(L.counted||!hasLog(logDate))return;
   SEC.forEach(([k])=>L.on[k].forEach(z=>{S.use[k][z]=(S.use[k][z]||0)+1}));
   L.counted=true;S.logs[logDate]=L;save();
+}
+function clearLog(){
+  if(!hasLog(logDate)){toast('Dit logboek is al leeg');return}
+  const old=S.logs[logDate],d=logDate;delete S.logs[d];save();renderLog();
+  toast('Logboek gewist',()=>{S.logs[d]=old;save();if(logDate===d)renderLog()})
 }
 function copyLog(){countUse();
   const t=logText(logDate);
